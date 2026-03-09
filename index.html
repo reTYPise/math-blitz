@@ -285,8 +285,8 @@
 
   <div class="section-label">ввод ответа</div>
   <div class="input-mode-row">
-    <button class="mode-btn selected" data-mode="keyboard" onclick="selectInputMode(this)">⌨ клавиатура</button>
-    <button class="mode-btn" data-mode="choices" onclick="selectInputMode(this)">☰ варианты</button>
+    <button class="mode-btn" data-mode="keyboard" onclick="selectInputMode(this)">⌨ клавиатура</button>
+    <button class="mode-btn selected" data-mode="choices" onclick="selectInputMode(this)">☰ варианты</button>
     <button class="mode-btn" data-mode="screen" onclick="selectInputMode(this)">📱 экран</button>
   </div>
 
@@ -376,7 +376,7 @@
 // ── SETTINGS ──
 let selectedOps       = ['×'];
 let selectedRange     = 10;
-let selectedInputMode = 'keyboard';
+let selectedInputMode = 'choices';
 let selectedGameMode  = 'classic';
 let classicCount      = 20;
 let timedSeconds      = 60;
