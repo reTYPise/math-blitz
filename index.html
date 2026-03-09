@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>math-blitz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #1e1e2e;
+    --accent: #e8ff47;
+    --accent2: #ff4757;
+    --accent3: #2ed573;
+    --accent4: #ff9f43;
+    --text: #f0f0f5;
+    --muted: #555568;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
+
+  .screen { display: none; width: 100%; height: 100vh; overflow-y: auto; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+
+  /* ── MENU ── */
+  #screen-menu { padding: 24px 20px 40px; gap: 0; }
+
+  .logo { font-family: var(--mono); font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 700; letter-spacing: -2px; color: var(--accent); margin-bottom: 4px; }
+  .logo span { color: var(--muted); }
+  .tagline { font-size: 0.7rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 24px; }
+
+  .section-label { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); width: 100%; max-width: 500px; margin-bottom: 8px; }
+
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 18px; }
+  .op-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: var(--sans); font-size: 1rem; font-weight: 700; padding: 13px;
+    cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
+  }
+  .op-btn::after { content: ''; position: absolute; inset: 0; background: var(--accent); opacity: 0; transition: opacity 0.15s; }
+  .op-btn:hover::after { opacity: 0.07; }
+  .op-btn.selected { border-color: var(--accent); color: var(--accent); }
+  .op-btn.selected::after { opacity: 0.1; }
+  .op-symbol { display: block; font-family: var(--mono); font-size: 1.3rem; margin-bottom: 2px; }
+
+  .range-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 500px; margin-bottom: 18px; }
+  .range-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--mono); font-size: 0.8rem; padding: 9px 6px; cursor: pointer; transition: all 0.15s;
+  }
+  .range-btn:hover { color: var(--text); border-color: var(--muted); }
+  .range-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
+
+  /* GAME MODE */
+  .game-mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 14px; }
+  .gm-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--sans); font-size: 0.75rem; font-weight: 700; padding: 12px 6px;
+    cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.4;
+  }
+  .gm-btn:hover { color: var(--text); border-color: var(--muted); }
+  .gm-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
+  .gm-icon { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+  .gm-sub { display: block; font-size: 0.6rem; color: var(--muted); margin-top: 3px; font-family: var(--mono); }
+  .gm-btn.selected .gm-sub { color: rgba(232,255,71,0.55); }
+
+  .mode-options { width: 100%; max-width: 500px; margin-bottom: 16px; }
+  .sub-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sub-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--mono); font-size: 0.78rem; padding: 7px 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .sub-btn:hover { color: var(--text); border-color: var(--muted); }
+  .sub-btn.selected { border-color: var(--accent4); color: var(--accent4); background: rgba(255,159,67,0.07); }
+
+  .input-mode-row { display: flex; gap: 6px; width: 100%; max-width: 500px; margin-bottom: 20px; }
+  .mode-btn {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--sans); font-size: 0.75rem; font-weight: 700; padding: 10px;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .mode-btn:hover { color: var(--text); }
+  .mode-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
+
+  .start-btn {
+    background: var(--accent); color: #000; border: none; font-family: var(--mono);
+    font-size: 1rem; font-weight: 700; padding: 15px 60px; cursor: pointer;
+    letter-spacing: 2px; transition: all 0.15s; width: 100%; max-width: 500px;
+  }
+  .start-btn:hover { background: #fff; }
+  .start-btn:active { transform: scale(0.98); }
+
+  /* ── GAME ── */
+  #screen-game { padding: 14px 20px 10px; gap: 0; justify-content: flex-start; }
+
+  .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 520px; margin-bottom: 10px; }
+  .streak { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+  .streak span { color: var(--accent); }
+  .quit-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--mono); font-size: 0.7rem; padding: 5px 12px; cursor: pointer; transition: all 0.15s;
+  }
+  .quit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* TIMER ROW */
+  .timer-row { width: 100%; max-width: 520px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .timer-display {
+    font-family: var(--mono); font-size: 1.5rem; font-weight: 700; min-width: 54px;
+    color: var(--accent); transition: color 0.3s;
+  }
+  .timer-display.warn { color: var(--accent4); }
+  .timer-display.critical { color: var(--accent2); animation: pulse-t 0.5s ease infinite alternate; }
+  @keyframes pulse-t { from { opacity: 1; } to { opacity: 0.35; } }
+
+  .timer-bar-wrap { flex: 1; height: 6px; background: var(--border); overflow: hidden; }
+  .timer-bar-fill { height: 100%; background: var(--accent); transition: width 0.22s linear, background 0.3s; }
+  .timer-bar-fill.warn { background: var(--accent4); }
+  .timer-bar-fill.critical { background: var(--accent2); }
+
+  .qcount-display { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); min-width: 44px; text-align: right; }
+
+  .progress-bar { width: 100%; max-width: 520px; height: 3px; background: var(--border); margin-bottom: 10px; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
+
+  .question-box {
+    width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--border);
+    padding: 26px 22px; text-align: center; margin-bottom: 12px;
+    position: relative; overflow: hidden; transition: border-color 0.2s;
+  }
+  .question-box.correct { border-color: var(--accent3); }
+  .question-box.wrong { border-color: var(--accent2); }
+  .question-text { font-family: var(--mono); font-size: clamp(2rem, 7vw, 4rem); font-weight: 700; letter-spacing: -2px; line-height: 1; }
+  .question-answer { font-family: var(--mono); font-size: clamp(1rem, 3.5vw, 1.6rem); color: var(--muted); margin-top: 8px; min-height: 1.7rem; transition: color 0.2s; }
+  .question-answer.show-wrong { color: var(--accent2); }
+  .question-answer.show-correct { color: var(--accent3); }
+
+  .typed-input-display { font-family: var(--mono); font-size: clamp(1.5rem, 5vw, 2.8rem); font-weight: 700; color: var(--accent); letter-spacing: 4px; min-height: 2.4rem; }
+  .typed-cursor { display: inline-block; width: 3px; height: 1em; background: var(--accent); vertical-align: middle; margin-left: 2px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .keyboard-hint { font-size: 0.62rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: -6px; margin-bottom: 10px; }
+
+  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 520px; }
+  .choice-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: var(--mono); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: 700;
+    padding: 17px; cursor: pointer; transition: all 0.12s;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .choice-btn:disabled { cursor: default; }
+  .choice-btn.correct-choice { border-color: var(--accent3) !important; color: var(--accent3) !important; background: rgba(46,213,115,0.08); }
+  .choice-btn.wrong-choice { border-color: var(--accent2) !important; color: var(--accent2) !important; background: rgba(255,71,87,0.08); }
+
+  .screen-keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 520px; margin-top: 4px; }
+  .sk-row { display: flex; gap: 6px; justify-content: center; }
+  .sk-btn {
+    flex: 1; max-width: 88px; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--mono); font-size: 1.1rem; font-weight: 700;
+    padding: 13px 10px; cursor: pointer; transition: all 0.1s; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .sk-btn:active { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); transform: scale(0.95); }
+  .sk-btn.sk-enter { background: var(--accent); color: #000; border-color: var(--accent); font-size: 0.85rem; letter-spacing: 1px; }
+  .sk-btn.sk-enter:active { background: #fff; }
+
+  /* TIMES UP */
+  .timesup-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(10,10,15,0.93);
+    z-index: 20; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+  }
+  .timesup-overlay.show { display: flex; animation: fadein 0.25s ease; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .timesup-title { font-family: var(--mono); font-size: clamp(2rem, 8vw, 4.5rem); color: var(--accent2); font-weight: 700; letter-spacing: -2px; }
+  .timesup-stats { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); }
+
+  /* FLASH */
+  .flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.08s; z-index: 10; }
+  .flash.correct-flash { background: rgba(46,213,115,0.15); }
+  .flash.wrong-flash { background: rgba(255,71,87,0.15); }
+  .flash.visible { opacity: 1; }
+
+  /* SCORE */
+  #screen-score { padding: 40px 20px; gap: 10px; justify-content: center; }
+  .score-title { font-family: var(--mono); font-size: clamp(0.9rem, 3vw, 1.4rem); color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
+  .score-number { font-family: var(--mono); font-size: clamp(3.5rem, 12vw, 7rem); font-weight: 700; color: var(--accent); line-height: 1; letter-spacing: -4px; }
+  .score-sub { font-size: 0.8rem; color: var(--muted); }
+  .score-time-display { font-family: var(--mono); font-size: 0.95rem; color: var(--accent4); }
+  .score-actions { display: flex; gap: 10px; margin-top: 16px; width: 100%; max-width: 400px; }
+  .score-btn {
+    flex: 1; padding: 14px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .score-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .score-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+  .score-btn.primary:hover { background: #fff; border-color: #fff; }
+
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+  .anim-pop { animation: pop 0.2s ease; }
+  .anim-shake { animation: shake 0.35s ease; }
+</style>
+</head>
+<body>
+
+<div class="flash" id="flash"></div>
+
+<div class="timesup-overlay" id="timesup-overlay">
+  <div class="timesup-title">ВРЕМЯ!</div>
+  <div class="timesup-stats" id="timesup-stats"></div>
+</div>
+
+<!-- ════════ MENU ════════ -->
+<div class="screen active" id="screen-menu">
+  <div class="logo">math<span>-</span>blitz</div>
+  <div class="tagline">скорость мышления</div>
+
+  <div class="section-label">операция</div>
+  <div class="menu-grid">
+    <button class="op-btn selected" data-op="×" onclick="toggleOp(this)"><span class="op-symbol">×</span>умножение</button>
+    <button class="op-btn" data-op="÷" onclick="toggleOp(this)"><span class="op-symbol">÷</span>деление</button>
+    <button class="op-btn" data-op="+" onclick="toggleOp(this)"><span class="op-symbol">+</span>сложение</button>
+    <button class="op-btn" data-op="−" onclick="toggleOp(this)"><span class="op-symbol">−</span>вычитание</button>
+  </div>
+
+  <div class="section-label">диапазон чисел</div>
+  <div class="range-grid">
+    <button class="range-btn selected" data-range="10" onclick="selectRange(this)">1–10</button>
+    <button class="range-btn" data-range="12" onclick="selectRange(this)">1–12</button>
+    <button class="range-btn" data-range="20" onclick="selectRange(this)">1–20</button>
+    <button class="range-btn" data-range="25" onclick="selectRange(this)">1–25</button>
+    <button class="range-btn" data-range="50" onclick="selectRange(this)">1–50</button>
+    <button class="range-btn" data-range="100" onclick="selectRange(this)">1–100</button>
+  </div>
+
+  <div class="section-label">режим игры</div>
+  <div class="game-mode-grid">
+    <button class="gm-btn selected" data-gm="classic" onclick="selectGameMode(this)">
+      <span class="gm-icon">📋</span>классика<span class="gm-sub">N вопросов</span>
+    </button>
+    <button class="gm-btn" data-gm="timed" onclick="selectGameMode(this)">
+      <span class="gm-icon">⏱</span>на время<span class="gm-sub">успей за T сек</span>
+    </button>
+    <button class="gm-btn" data-gm="survival" onclick="selectGameMode(this)">
+      <span class="gm-icon">∞</span>выживание<span class="gm-sub">максимум за T</span>
+    </button>
+  </div>
+
+  <div class="mode-options" id="opts-classic">
+    <div class="section-label">количество вопросов</div>
+    <div class="sub-grid">
+      <button class="sub-btn" data-val="10" onclick="selectSub('classic',this)">10</button>
+      <button class="sub-btn selected" data-val="20" onclick="selectSub('classic',this)">20</button>
+      <button class="sub-btn" data-val="30" onclick="selectSub('classic',this)">30</button>
+      <button class="sub-btn" data-val="50" onclick="selectSub('classic',this)">50</button>
+      <button class="sub-btn" data-val="100" onclick="selectSub('classic',this)">100</button>
+    </div>
+  </div>
+
+  <div class="mode-options" id="opts-timed" style="display:none">
+    <div class="section-label">время на сессию</div>
+    <div class="sub-grid">
+      <button class="sub-btn" data-val="30" onclick="selectSub('timed',this)">30 сек</button>
+      <button class="sub-btn selected" data-val="60" onclick="selectSub('timed',this)">1 мин</button>
+      <button class="sub-btn" data-val="120" onclick="selectSub('timed',this)">2 мин</button>
+      <button class="sub-btn" data-val="180" onclick="selectSub('timed',this)">3 мин</button>
+      <button class="sub-btn" data-val="300" onclick="selectSub('timed',this)">5 мин</button>
+    </div>
+  </div>
+
+  <div class="mode-options" id="opts-survival" style="display:none">
+    <div class="section-label">лимит времени</div>
+    <div class="sub-grid">
+      <button class="sub-btn" data-val="60" onclick="selectSub('survival',this)">1 мин</button>
+      <button class="sub-btn selected" data-val="120" onclick="selectSub('survival',this)">2 мин</button>
+      <button class="sub-btn" data-val="180" onclick="selectSub('survival',this)">3 мин</button>
+      <button class="sub-btn" data-val="300" onclick="selectSub('survival',this)">5 мин</button>
+    </div>
+  </div>
+
+  <div class="section-label">ввод ответа</div>
+  <div class="input-mode-row">
+    <button class="mode-btn selected" data-mode="keyboard" onclick="selectInputMode(this)">⌨ клавиатура</button>
+    <button class="mode-btn" data-mode="choices" onclick="selectInputMode(this)">☰ варианты</button>
+    <button class="mode-btn" data-mode="screen" onclick="selectInputMode(this)">📱 экран</button>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">СТАРТ →</button>
+</div>
+
+<!-- ════════ GAME ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-header">
+    <div class="streak">серия: <span id="streak-count">0</span></div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);">
+        ✓<span id="score-correct" style="color:var(--accent3);margin-left:3px">0</span>
+        &nbsp;✗<span id="score-wrong" style="color:var(--accent2);margin-left:3px">0</span>
+      </div>
+      <button class="quit-btn" onclick="quitGame()">✕ выход</button>
+    </div>
+  </div>
+
+  <div class="timer-row" id="timer-row" style="display:none">
+    <div class="timer-display" id="timer-display">60</div>
+    <div class="timer-bar-wrap">
+      <div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div>
+    </div>
+    <div class="qcount-display" id="qcount-display"></div>
+  </div>
+
+  <div class="progress-bar" id="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="question-box" id="question-box">
+    <div class="question-text" id="question-text">?</div>
+    <div class="question-answer" id="question-answer"></div>
+    <div class="typed-input-display" id="typed-display" style="display:none">
+      <span id="typed-value"></span><span class="typed-cursor"></span>
+    </div>
+  </div>
+
+  <div class="keyboard-hint" id="keyboard-hint" style="display:none">цифры · Enter → ответ · Backspace → стереть</div>
+
+  <div class="choices-grid" id="choices-grid" style="display:none">
+    <button class="choice-btn" id="c0" onclick="selectChoice(0)"></button>
+    <button class="choice-btn" id="c1" onclick="selectChoice(1)"></button>
+    <button class="choice-btn" id="c2" onclick="selectChoice(2)"></button>
+    <button class="choice-btn" id="c3" onclick="selectChoice(3)"></button>
+  </div>
+
+  <div class="screen-keyboard" id="screen-keyboard" style="display:none">
+    <div class="sk-row">
+      <button class="sk-btn" onclick="skPress('7')">7</button>
+      <button class="sk-btn" onclick="skPress('8')">8</button>
+      <button class="sk-btn" onclick="skPress('9')">9</button>
+    </div>
+    <div class="sk-row">
+      <button class="sk-btn" onclick="skPress('4')">4</button>
+      <button class="sk-btn" onclick="skPress('5')">5</button>
+      <button class="sk-btn" onclick="skPress('6')">6</button>
+    </div>
+    <div class="sk-row">
+      <button class="sk-btn" onclick="skPress('1')">1</button>
+      <button class="sk-btn" onclick="skPress('2')">2</button>
+      <button class="sk-btn" onclick="skPress('3')">3</button>
+    </div>
+    <div class="sk-row">
+      <button class="sk-btn" onclick="skPress('back')">⌫</button>
+      <button class="sk-btn" onclick="skPress('0')">0</button>
+      <button class="sk-btn sk-enter" onclick="skPress('enter')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SCORE ════════ -->
+<div class="screen" id="screen-score">
+  <div class="score-title" id="score-mode-label">итого</div>
+  <div class="score-number" id="final-score">0</div>
+  <div class="score-sub" id="final-sub"></div>
+  <div class="score-time-display" id="final-time" style="display:none"></div>
+  <div class="score-sub" id="final-streak"></div>
+  <div class="score-actions">
+    <button class="score-btn" onclick="goMenu()">меню</button>
+    <button class="score-btn primary" onclick="restartGame()">ещё раз</button>
+  </div>
+</div>
+
+<script>
+// ── SETTINGS ──
+let selectedOps       = ['×'];
+let selectedRange     = 10;
+let selectedInputMode = 'keyboard';
+let selectedGameMode  = 'classic';
+let classicCount      = 20;
+let timedSeconds      = 60;
+let survivalSeconds   = 120;
+
+// ── GAME STATE ──
+let typedValue     = '';
+let currentAnswer  = 0;
+let currentChoices = [];
+let correctCount   = 0;
+let wrongCount     = 0;
+let streak         = 0;
+let bestStreak     = 0;
+let totalQuestions = 20;
+let questionNum    = 0;
+let locked         = false;
+let lastSettings   = {};
+let gameStartTime  = 0;
+
+// timer
+let timerInterval   = null;
+let timerRemaining  = 0;
+let timerTotal      = 0;
+let warnedHalf      = false;
+let warnedCritical  = false;
+let gameOver        = false;
+
+// ── AUDIO ──
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+function getAC() { if (!actx) actx = new AudioCtx(); return actx; }
+
+function playCorrect() {
+  try {
+    const ctx = getAC(), t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(660, t);
+    o.frequency.setValueAtTime(880, t + 0.08);
+    g.gain.setValueAtTime(0.28, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+    o.start(t); o.stop(t + 0.24);
+  } catch(e) {}
+}
+
+function playWrong() {
+  try {
+    const ctx = getAC(), t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.setValueAtTime(160, t + 0.12);
+    g.gain.setValueAtTime(0.2, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.34);
+    o.start(t); o.stop(t + 0.34);
+  } catch(e) {}
+}
+
+// 50% времени — одиночный предупреждающий сигнал
+function playWarn() {
+  try {
+    const ctx = getAC(), t = ctx.currentTime;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(750, t);
+    g.gain.setValueAtTime(0.22, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+    o.start(t); o.stop(t + 0.45);
+  } catch(e) {}
+}
+
+// 20% времени — тройной тревожный сигнал
+function playCritical() {
+  try {
+    const ctx = getAC();
+    [0, 0.17, 0.34].forEach(delay => {
+      const t = ctx.currentTime + delay;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'square';
+      o.frequency.setValueAtTime(900, t);
+      g.gain.setValueAtTime(0.15, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+      o.start(t); o.stop(t + 0.13);
+    });
+  } catch(e) {}
+}
+
+// Время вышло — нисходящие ноты
+function playTimeUp() {
+  try {
+    const ctx = getAC();
+    [440, 349, 261].forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.22;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.28, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      o.start(t); o.stop(t + 0.5);
+    });
+  } catch(e) {}
+}
+
+// ── MENU ──
+function toggleOp(btn) {
+  const op = btn.dataset.op;
+  if (selectedOps.includes(op)) {
+    if (selectedOps.length === 1) return;
+    selectedOps = selectedOps.filter(o => o !== op);
+    btn.classList.remove('selected');
+  } else {
+    selectedOps.push(op);
+    btn.classList.add('selected');
+  }
+}
+
+function selectRange(btn) {
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedRange = parseInt(btn.dataset.range);
+}
+
+function selectGameMode(btn) {
+  document.querySelectorAll('.gm-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedGameMode = btn.dataset.gm;
+  document.getElementById('opts-classic').style.display  = selectedGameMode === 'classic'  ? 'block' : 'none';
+  document.getElementById('opts-timed').style.display    = selectedGameMode === 'timed'    ? 'block' : 'none';
+  document.getElementById('opts-survival').style.display = selectedGameMode === 'survival' ? 'block' : 'none';
+}
+
+function selectSub(mode, btn) {
+  btn.closest('.sub-grid').querySelectorAll('.sub-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const v = parseInt(btn.dataset.val);
+  if (mode === 'classic')  classicCount = v;
+  if (mode === 'timed')    timedSeconds = v;
+  if (mode === 'survival') survivalSeconds = v;
+}
+
+function selectInputMode(btn) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedInputMode = btn.dataset.mode;
+}
+
+// ── QUESTION GEN ──
+function generateQuestion() {
+  const op = selectedOps[Math.floor(Math.random() * selectedOps.length)];
+  let a, b, answer;
+  if (op === '×') { a = randInt(1, selectedRange); b = randInt(1, selectedRange); answer = a * b; }
+  else if (op === '÷') { b = randInt(1, selectedRange); answer = randInt(1, selectedRange); a = b * answer; }
+  else if (op === '+') { a = randInt(1, selectedRange); b = randInt(1, selectedRange); answer = a + b; }
+  else { a = randInt(1, selectedRange); b = randInt(1, a); answer = a - b; }
+  return { text: `${a} ${op} ${b}`, answer };
+}
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function generateChoices(correct) {
+  const choices = new Set([correct]);
+  let attempts = 0;
+  while (choices.size < 4 && attempts < 120) {
+    attempts++;
+    const spread = Math.max(3, Math.floor(correct * 0.28));
+    const delta = randInt(-spread, spread);
+    const c = correct + delta;
+    if (c > 0 && c !== correct) choices.add(c);
+  }
+  let fb = 1;
+  while (choices.size < 4) { if (!choices.has(fb)) choices.add(fb); fb++; }
+  return shuffle([...choices]);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ── START ──
+function startGame() {
+  lastSettings = {
+    ops: [...selectedOps], range: selectedRange,
+    inputMode: selectedInputMode, gameMode: selectedGameMode,
+    classicCount, timedSeconds, survivalSeconds
+  };
+  correctCount = 0; wrongCount = 0; streak = 0; bestStreak = 0;
+  questionNum = 0; locked = false; gameOver = false;
+  warnedHalf = false; warnedCritical = false;
+  gameStartTime = Date.now();
+  totalQuestions = selectedGameMode === 'classic' ? classicCount : Infinity;
+
+  showScreen('game');
+  setupInputMode();
+  setupTimer();
+  nextQuestion();
+}
+
+function restartGame() {
+  selectedOps       = lastSettings.ops;
+  selectedRange     = lastSettings.range;
+  selectedInputMode = lastSettings.inputMode;
+  selectedGameMode  = lastSettings.gameMode;
+  classicCount      = lastSettings.classicCount  || classicCount;
+  timedSeconds      = lastSettings.timedSeconds   || timedSeconds;
+  survivalSeconds   = lastSettings.survivalSeconds || survivalSeconds;
+  startGame();
+}
+
+// ── TIMER ──
+function setupTimer() {
+  clearInterval(timerInterval);
+  const hasClock = selectedGameMode === 'timed' || selectedGameMode === 'survival';
+  document.getElementById('timer-row').style.display    = hasClock ? 'flex' : 'none';
+  document.getElementById('progress-bar').style.display = hasClock ? 'none' : 'block';
+
+  if (!hasClock) return;
+
+  timerTotal = selectedGameMode === 'timed' ? timedSeconds : survivalSeconds;
+  timerRemaining = timerTotal;
+  renderTimer();
+  timerInterval = setInterval(tickTimer, 250);
+}
+
+function tickTimer() {
+  if (gameOver) { clearInterval(timerInterval); return; }
+  timerRemaining = Math.max(0, timerRemaining - 0.25);
+
+  const pct = timerRemaining / timerTotal;
+  if (!warnedHalf && pct <= 0.5) { warnedHalf = true; playWarn(); }
+  if (!warnedCritical && pct <= 0.2) { warnedCritical = true; playCritical(); }
+
+  renderTimer();
+
+  if (timerRemaining <= 0) {
+    clearInterval(timerInterval);
+    triggerTimeUp();
+  }
+}
+
+function renderTimer() {
+  const secs = Math.ceil(timerRemaining);
+  const pct  = timerTotal > 0 ? timerRemaining / timerTotal : 0;
+  const mins = Math.floor(secs / 60);
+  const s    = secs % 60;
+
+  const disp = document.getElementById('timer-display');
+  const bar  = document.getElementById('timer-bar-fill');
+  const qc   = document.getElementById('qcount-display');
+
+  disp.textContent = timerTotal >= 60 ? `${mins}:${String(s).padStart(2,'0')}` : `${secs}`;
+  bar.style.width  = (pct * 100) + '%';
+
+  const cls = pct <= 0.2 ? 'critical' : pct <= 0.5 ? 'warn' : '';
+  disp.className = 'timer-display' + (cls ? ' ' + cls : '');
+  bar.className  = 'timer-bar-fill' + (cls ? ' ' + cls : '');
+
+  qc.textContent = selectedGameMode === 'survival'
+    ? correctCount + ' ✓'
+    : `${correctCount} ✓`;
+}
+
+function triggerTimeUp() {
+  if (gameOver) return;
+  gameOver = true;
+  locked = true;
+  playTimeUp();
+
+  const overlay = document.getElementById('timesup-overlay');
+  document.getElementById('timesup-stats').textContent =
+    `✓ ${correctCount}  ✗ ${wrongCount}  серия: ${bestStreak}`;
+  overlay.classList.add('show');
+
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    showScore();
+  }, 1900);
+}
+
+// ── INPUT MODE ──
+function setupInputMode() {
+  document.getElementById('choices-grid').style.display    = 'none';
+  document.getElementById('screen-keyboard').style.display = 'none';
+  document.getElementById('typed-display').style.display   = 'none';
+  document.getElementById('keyboard-hint').style.display   = 'none';
+
+  if (selectedInputMode === 'choices') {
+    document.getElementById('choices-grid').style.display = 'grid';
+  } else if (selectedInputMode === 'screen') {
+    document.getElementById('screen-keyboard').style.display = 'flex';
+    document.getElementById('typed-display').style.display   = 'block';
+  } else {
+    document.getElementById('typed-display').style.display = 'block';
+    document.getElementById('keyboard-hint').style.display  = 'block';
+  }
+}
+
+// ── NEXT QUESTION ──
+function nextQuestion() {
+  if (gameOver) return;
+  if (selectedGameMode === 'classic' && questionNum >= totalQuestions) {
+    clearInterval(timerInterval);
+    showScore();
+    return;
+  }
+
+  const q = generateQuestion();
+  currentAnswer = q.answer;
+  typedValue = '';
+  locked = false;
+
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('question-answer').textContent = '';
+  document.getElementById('question-answer').className = 'question-answer';
+  document.getElementById('typed-value').textContent = '';
+  document.getElementById('typed-value').style.color = '';
+
+  const qBox = document.getElementById('question-box');
+  qBox.className = 'question-box';
+  void qBox.offsetWidth;
+  qBox.classList.add('anim-pop');
+
+  if (selectedGameMode === 'classic') {
+    document.getElementById('progress-fill').style.width = (questionNum / totalQuestions * 100) + '%';
+  }
+
+  if (selectedInputMode === 'choices') {
+    currentChoices = generateChoices(currentAnswer);
+    for (let i = 0; i < 4; i++) {
+      const btn = document.getElementById('c' + i);
+      btn.textContent = currentChoices[i];
+      btn.className = 'choice-btn';
+      btn.disabled = false;
+    }
+  }
+
+  questionNum++;
+  updateHUD();
+}
+
+function updateHUD() {
+  document.getElementById('streak-count').textContent  = streak;
+  document.getElementById('score-correct').textContent = correctCount;
+  document.getElementById('score-wrong').textContent   = wrongCount;
+}
+
+// ── ANSWERS ──
+function submitAnswer(userAnswer) {
+  if (locked || gameOver) return;
+  parseInt(userAnswer) === currentAnswer ? handleCorrect() : handleWrong(userAnswer);
+}
+
+function handleCorrect() {
+  locked = true;
+  correctCount++; streak++;
+  if (streak > bestStreak) bestStreak = streak;
+  updateHUD();
+  playCorrect();
+  showFlash('correct-flash');
+
+  document.getElementById('question-box').classList.add('correct');
+  if (selectedInputMode !== 'choices') document.getElementById('typed-value').textContent = currentAnswer;
+  const ans = document.getElementById('question-answer');
+  ans.textContent = '✓'; ans.className = 'question-answer show-correct';
+
+  setTimeout(() => nextQuestion(), 180);
+}
+
+function handleWrong(userAnswer) {
+  locked = true;
+  wrongCount++; streak = 0;
+  updateHUD();
+  playWrong();
+  showFlash('wrong-flash');
+
+  const qBox = document.getElementById('question-box');
+  qBox.classList.add('wrong'); void qBox.offsetWidth; qBox.classList.add('anim-shake');
+
+  if (selectedInputMode !== 'choices') {
+    const tv = document.getElementById('typed-value');
+    tv.textContent = userAnswer;
+    tv.style.color = 'var(--accent2)';
+  }
+  const ans = document.getElementById('question-answer');
+  ans.textContent = `→ ${currentAnswer}`; ans.className = 'question-answer show-wrong';
+
+  setTimeout(() => {
+    typedValue = '';
+    document.getElementById('typed-value').textContent = '';
+    document.getElementById('typed-value').style.color = '';
+    nextQuestion();
+  }, 1200);
+}
+
+function selectChoice(idx) {
+  if (locked || gameOver) return;
+  const chosen = currentChoices[idx];
+  for (let i = 0; i < 4; i++) document.getElementById('c' + i).disabled = true;
+  const btn = document.getElementById('c' + idx);
+  if (chosen === currentAnswer) {
+    btn.classList.add('correct-choice');
+    handleCorrect();
+  } else {
+    btn.classList.add('wrong-choice');
+    const ci = currentChoices.indexOf(currentAnswer);
+    if (ci !== -1) document.getElementById('c' + ci).classList.add('correct-choice');
+    handleWrong(chosen);
+  }
+}
+
+// ── TYPED INPUT ──
+function appendDigit(d) {
+  if (locked || gameOver) return;
+  if (typedValue.length >= 5) return;
+  typedValue += d;
+  document.getElementById('typed-value').textContent = typedValue;
+}
+function backspace() {
+  if (locked || gameOver) return;
+  typedValue = typedValue.slice(0, -1);
+  document.getElementById('typed-value').textContent = typedValue;
+}
+function confirmInput() {
+  if (locked || gameOver || typedValue === '') return;
+  submitAnswer(typedValue);
+}
+function skPress(key) {
+  if (key === 'back') backspace();
+  else if (key === 'enter') confirmInput();
+  else appendDigit(key);
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('screen-game').classList.contains('active')) return;
+  if (selectedInputMode === 'keyboard' || selectedInputMode === 'screen') {
+    if (e.key >= '0' && e.key <= '9') { e.preventDefault(); appendDigit(e.key); }
+    else if (e.key === 'Backspace') backspace();
+    else if (e.key === 'Enter') confirmInput();
+  }
+});
+
+// ── FLASH ──
+function showFlash(cls) {
+  const f = document.getElementById('flash');
+  f.className = 'flash ' + cls + ' visible';
+  setTimeout(() => f.classList.remove('visible'), 140);
+}
+
+// ── QUIT / SCORE ──
+function quitGame() {
+  clearInterval(timerInterval);
+  gameOver = true;
+  showScore();
+}
+
+function showScore() {
+  clearInterval(timerInterval);
+  const elapsed = ((Date.now() - gameStartTime) / 1000).toFixed(1);
+  const answeredQ = questionNum; // already incremented before each q
+
+  let modeLabel, subLine, timeLine = null;
+
+  if (selectedGameMode === 'classic') {
+    const pct = answeredQ > 0 ? Math.round((correctCount / answeredQ) * 100) : 0;
+    modeLabel = 'классика';
+    subLine   = `правильно: ${correctCount} из ${answeredQ} · ${pct}%`;
+    timeLine  = `время: ${elapsed} сек`;
+  } else if (selectedGameMode === 'timed') {
+    modeLabel = 'на время';
+    subLine   = `вопросов: ${answeredQ} · правильно: ${correctCount} · ошибок: ${wrongCount}`;
+  } else {
+    modeLabel = 'выживание';
+    subLine   = `правильно: ${correctCount} · ошибок: ${wrongCount} · вопросов: ${answeredQ}`;
+  }
+
+  document.getElementById('score-mode-label').textContent = modeLabel;
+  document.getElementById('final-score').textContent      = correctCount;
+  document.getElementById('final-sub').textContent        = subLine;
+  document.getElementById('final-streak').textContent     = `лучшая серия: ${bestStreak}`;
+
+  const timeEl = document.getElementById('final-time');
+  if (timeLine) { timeEl.textContent = timeLine; timeEl.style.display = 'block'; }
+  else timeEl.style.display = 'none';
+
+  showScreen('score');
+}
+
+function goMenu() { showScreen('menu'); }
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>
