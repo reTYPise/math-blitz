@@ -199,15 +199,28 @@
     background: var(--surface); border: 1px solid var(--border); padding: 14px;
   }
   .practice-guide.show { display: block; }
-  .guide-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .guide-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .guide-copy { min-width: 0; }
   .guide-title { font-family: var(--mono); font-size: 0.9rem; color: var(--accent); font-weight: 700; }
-  .guide-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
+  .guide-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 3px; }
+  .guide-reveal-btn {
+    flex: 0 0 auto; background: none; border: 1px solid var(--border); color: var(--muted);
+    font-family: var(--mono); font-size: 0.68rem; padding: 7px 10px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 1px; transition: all 0.15s;
+  }
+  .guide-reveal-btn:hover { border-color: var(--accent); color: var(--accent); }
   .guide-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 6px; }
+  .practice-guide.collapsed .guide-list { display: none; }
   .guide-row {
     border: 1px solid var(--border); padding: 8px 9px; font-family: var(--mono);
     font-size: 0.82rem; color: var(--text); background: rgba(255,255,255,0.015);
   }
   .guide-row span { color: var(--accent); }
+  .guide-row.current {
+    border-color: var(--accent); background: rgba(232,255,71,0.11); color: #fff;
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .guide-row.current span { color: #fff; }
 
   @media (max-width: 760px) {
     html, body { overflow: auto; }
@@ -458,6 +471,7 @@ let selectedOps       = ['×'];
 let selectedRange     = 10;
 let selectedFocus     = 'any';
 let showAnswerGuide   = true;
+let guideExpanded     = true;
 let selectedInputMode = 'choices';
 let selectedGameMode  = 'classic';
 let classicCount      = 20;
@@ -467,6 +481,7 @@ let survivalSeconds   = 120;
 // ── GAME STATE ──
 let typedValue     = '';
 let currentAnswer  = 0;
+let currentGuideKey = '';
 let currentChoices = [];
 let correctCount   = 0;
 let wrongCount     = 0;
@@ -594,7 +609,14 @@ function selectFocus(control) {
 
 function toggleGuide(control) {
   showAnswerGuide = control.checked;
+  guideExpanded = showAnswerGuide;
   renderPracticeGuide();
+}
+
+function setGuideExpanded(expanded) {
+  guideExpanded = expanded;
+  renderPracticeGuide();
+  highlightGuideAnswer();
 }
 
 function updateFocusOptions() {
@@ -699,28 +721,44 @@ function renderPracticeGuide() {
   const guide = document.getElementById('practice-guide');
   if (!guide) return;
 
-  if (!showAnswerGuide) {
-    guide.classList.remove('show');
-    guide.innerHTML = '';
-    return;
-  }
-
   const rows = buildGuideRows();
   const title = selectedFocus === 'any'
     ? `таблица 1–${selectedRange}`
     : `только на ${selectedFocus}`;
   const meta = rows.limited ? `первые ${rows.items.length}` : `${rows.items.length} ответов`;
+  const buttonLabel = guideExpanded ? 'скрыть' : 'раскрыть';
+  const buttonTitle = guideExpanded ? 'Скрыть готовые ответы' : 'Показать готовые ответы';
 
   guide.innerHTML = `
     <div class="guide-head">
-      <div class="guide-title">${title}</div>
-      <div class="guide-meta">${meta}</div>
+      <div class="guide-copy">
+        <div class="guide-title">${title}</div>
+        <div class="guide-meta">${meta}</div>
+      </div>
+      <button class="guide-reveal-btn" id="guide-reveal-btn" type="button" title="${buttonTitle}" onclick="setGuideExpanded(!guideExpanded)">${buttonLabel}</button>
     </div>
     <div class="guide-list">
-      ${rows.items.map(row => `<div class="guide-row">${row.left} = <span>${row.answer}</span></div>`).join('')}
+      ${rows.items.map(row => {
+        const key = getGuideKey(row.left, row.answer);
+        const current = key === currentGuideKey ? ' current' : '';
+        return `<div class="guide-row${current}" data-guide-key="${key}">${row.left} = <span>${row.answer}</span></div>`;
+      }).join('')}
     </div>
   `;
-  guide.classList.add('show');
+  guide.className = 'practice-guide show' + (guideExpanded ? '' : ' collapsed');
+}
+
+function highlightGuideAnswer() {
+  const guide = document.getElementById('practice-guide');
+  if (!guide || !currentGuideKey) return;
+
+  guide.querySelectorAll('.guide-row.current').forEach(row => row.classList.remove('current'));
+  const current = guide.querySelector(`[data-guide-key="${currentGuideKey}"]`);
+  if (current) current.classList.add('current');
+}
+
+function getGuideKey(left, answer) {
+  return `${left}|${answer}`;
 }
 
 function buildGuideRows() {
@@ -770,6 +808,8 @@ function startGame() {
   };
   correctCount = 0; wrongCount = 0; streak = 0; bestStreak = 0;
   questionNum = 0; locked = false; gameOver = false;
+  currentGuideKey = '';
+  guideExpanded = showAnswerGuide;
   warnedHalf = false; warnedCritical = false;
   gameStartTime = Date.now();
   totalQuestions = selectedGameMode === 'classic' ? classicCount : Infinity;
@@ -893,6 +933,7 @@ function nextQuestion() {
 
   const q = generateQuestion();
   currentAnswer = q.answer;
+  currentGuideKey = getGuideKey(q.text, q.answer);
   typedValue = '';
   locked = false;
 
@@ -922,6 +963,7 @@ function nextQuestion() {
   }
 
   questionNum++;
+  highlightGuideAnswer();
   updateHUD();
 }
 
