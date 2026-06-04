@@ -58,6 +58,25 @@
   .range-btn:hover { color: var(--text); border-color: var(--muted); }
   .range-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
 
+  .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 12px; }
+  .select-field { display: flex; flex-direction: column; gap: 6px; }
+  .select-field span {
+    font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+  }
+  .select-field select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: var(--mono); font-size: 0.82rem; padding: 11px 10px; cursor: pointer; outline: none;
+  }
+  .select-field select:focus { border-color: var(--accent); }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; max-width: 500px; margin-bottom: 18px; padding: 10px 12px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .toggle-row label { display: flex; align-items: center; gap: 9px; cursor: pointer; color: var(--text); font-size: 0.78rem; font-weight: 700; }
+  .toggle-row input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .toggle-hint { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); white-space: nowrap; }
+
   /* GAME MODE */
   .game-mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 14px; }
   .gm-btn {
@@ -98,9 +117,16 @@
   .start-btn:active { transform: scale(0.98); }
 
   /* ── GAME ── */
-  #screen-game { padding: 14px 20px 10px; gap: 0; justify-content: flex-start; }
+  #screen-game { padding: 14px 20px 16px; gap: 0; justify-content: flex-start; }
 
-  .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 520px; margin-bottom: 10px; }
+  .game-shell {
+    width: 100%; max-width: 1040px; min-height: calc(100vh - 30px);
+    display: grid; grid-template-columns: minmax(0, 520px) minmax(260px, 1fr);
+    gap: 16px; align-items: start;
+  }
+  .game-main { width: 100%; min-width: 0; }
+
+  .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; }
   .streak { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
   .streak span { color: var(--accent); }
   .quit-btn {
@@ -110,7 +136,7 @@
   .quit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
   /* TIMER ROW */
-  .timer-row { width: 100%; max-width: 520px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .timer-row { width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
   .timer-display {
     font-family: var(--mono); font-size: 1.5rem; font-weight: 700; min-width: 54px;
     color: var(--accent); transition: color 0.3s;
@@ -126,11 +152,11 @@
 
   .qcount-display { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); min-width: 44px; text-align: right; }
 
-  .progress-bar { width: 100%; max-width: 520px; height: 3px; background: var(--border); margin-bottom: 10px; }
+  .progress-bar { width: 100%; height: 3px; background: var(--border); margin-bottom: 10px; }
   .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
 
   .question-box {
-    width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--border);
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
     padding: 26px 22px; text-align: center; margin-bottom: 12px;
     position: relative; overflow: hidden; transition: border-color 0.2s;
   }
@@ -146,7 +172,7 @@
   @keyframes blink { 50% { opacity: 0; } }
   .keyboard-hint { font-size: 0.62rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: -6px; margin-bottom: 10px; }
 
-  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 520px; }
+  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
   .choice-btn {
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
     font-family: var(--mono); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: 700;
@@ -157,7 +183,7 @@
   .choice-btn.correct-choice { border-color: var(--accent3) !important; color: var(--accent3) !important; background: rgba(46,213,115,0.08); }
   .choice-btn.wrong-choice { border-color: var(--accent2) !important; color: var(--accent2) !important; background: rgba(255,71,87,0.08); }
 
-  .screen-keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 520px; margin-top: 4px; }
+  .screen-keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px; }
   .sk-row { display: flex; gap: 6px; justify-content: center; }
   .sk-btn {
     flex: 1; max-width: 88px; background: var(--surface); border: 1px solid var(--border);
@@ -167,6 +193,38 @@
   .sk-btn:active { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); transform: scale(0.95); }
   .sk-btn.sk-enter { background: var(--accent); color: #000; border-color: var(--accent); font-size: 0.85rem; letter-spacing: 1px; }
   .sk-btn.sk-enter:active { background: #fff; }
+
+  .practice-guide {
+    display: none; width: 100%; max-height: calc(100vh - 30px); overflow: auto;
+    background: var(--surface); border: 1px solid var(--border); padding: 14px;
+  }
+  .practice-guide.show { display: block; }
+  .guide-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .guide-title { font-family: var(--mono); font-size: 0.9rem; color: var(--accent); font-weight: 700; }
+  .guide-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
+  .guide-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 6px; }
+  .guide-row {
+    border: 1px solid var(--border); padding: 8px 9px; font-family: var(--mono);
+    font-size: 0.82rem; color: var(--text); background: rgba(255,255,255,0.015);
+  }
+  .guide-row span { color: var(--accent); }
+
+  @media (max-width: 760px) {
+    html, body { overflow: auto; }
+    .screen { min-height: 100vh; height: auto; }
+    .settings-row { grid-template-columns: 1fr; }
+    .toggle-row { align-items: flex-start; flex-direction: column; gap: 6px; }
+    .toggle-hint { white-space: normal; }
+    .game-shell { min-height: auto; grid-template-columns: 1fr; gap: 12px; }
+    .practice-guide { max-height: none; }
+    .guide-list { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 420px) {
+    #screen-menu, #screen-game { padding-left: 14px; padding-right: 14px; }
+    .game-mode-grid, .input-mode-row { grid-template-columns: 1fr; flex-direction: column; }
+    .guide-list { grid-template-columns: 1fr; }
+  }
 
   /* TIMES UP */
   .timesup-overlay {
@@ -228,14 +286,30 @@
     <button class="op-btn" data-op="−" onclick="toggleOp(this)"><span class="op-symbol">−</span>вычитание</button>
   </div>
 
-  <div class="section-label">диапазон чисел</div>
-  <div class="range-grid">
-    <button class="range-btn selected" data-range="10" onclick="selectRange(this)">1–10</button>
-    <button class="range-btn" data-range="12" onclick="selectRange(this)">1–12</button>
-    <button class="range-btn" data-range="20" onclick="selectRange(this)">1–20</button>
-    <button class="range-btn" data-range="25" onclick="selectRange(this)">1–25</button>
-    <button class="range-btn" data-range="50" onclick="selectRange(this)">1–50</button>
-    <button class="range-btn" data-range="100" onclick="selectRange(this)">1–100</button>
+  <div class="section-label">числа и подсказка</div>
+  <div class="settings-row">
+    <label class="select-field">
+      <span>диапазон</span>
+      <select id="range-select" onchange="selectRange(this)">
+        <option value="10" selected>1–10</option>
+        <option value="12">1–12</option>
+        <option value="20">1–20</option>
+        <option value="25">1–25</option>
+        <option value="50">1–50</option>
+        <option value="100">1–100</option>
+      </select>
+    </label>
+    <label class="select-field">
+      <span>тренировать</span>
+      <select id="focus-select" onchange="selectFocus(this)"></select>
+    </label>
+  </div>
+  <div class="toggle-row">
+    <label for="guide-toggle">
+      <input id="guide-toggle" type="checkbox" checked onchange="toggleGuide(this)">
+      показывать готовые ответы
+    </label>
+    <div class="toggle-hint">справа в игре</div>
   </div>
 
   <div class="section-label">режим игры</div>
@@ -295,67 +369,73 @@
 
 <!-- ════════ GAME ════════ -->
 <div class="screen" id="screen-game">
-  <div class="game-header">
-    <div class="streak">серия: <span id="streak-count">0</span></div>
-    <div style="display:flex;gap:12px;align-items:center;">
-      <div style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);">
-        ✓<span id="score-correct" style="color:var(--accent3);margin-left:3px">0</span>
-        &nbsp;✗<span id="score-wrong" style="color:var(--accent2);margin-left:3px">0</span>
+  <div class="game-shell">
+    <main class="game-main">
+      <div class="game-header">
+        <div class="streak">серия: <span id="streak-count">0</span></div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);">
+            ✓<span id="score-correct" style="color:var(--accent3);margin-left:3px">0</span>
+            &nbsp;✗<span id="score-wrong" style="color:var(--accent2);margin-left:3px">0</span>
+          </div>
+          <button class="quit-btn" onclick="quitGame()">✕ выход</button>
+        </div>
       </div>
-      <button class="quit-btn" onclick="quitGame()">✕ выход</button>
-    </div>
-  </div>
 
-  <div class="timer-row" id="timer-row" style="display:none">
-    <div class="timer-display" id="timer-display">60</div>
-    <div class="timer-bar-wrap">
-      <div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div>
-    </div>
-    <div class="qcount-display" id="qcount-display"></div>
-  </div>
+      <div class="timer-row" id="timer-row" style="display:none">
+        <div class="timer-display" id="timer-display">60</div>
+        <div class="timer-bar-wrap">
+          <div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div>
+        </div>
+        <div class="qcount-display" id="qcount-display"></div>
+      </div>
 
-  <div class="progress-bar" id="progress-bar">
-    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-  </div>
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
 
-  <div class="question-box" id="question-box">
-    <div class="question-text" id="question-text">?</div>
-    <div class="question-answer" id="question-answer"></div>
-    <div class="typed-input-display" id="typed-display" style="display:none">
-      <span id="typed-value"></span><span class="typed-cursor"></span>
-    </div>
-  </div>
+      <div class="question-box" id="question-box">
+        <div class="question-text" id="question-text">?</div>
+        <div class="question-answer" id="question-answer"></div>
+        <div class="typed-input-display" id="typed-display" style="display:none">
+          <span id="typed-value"></span><span class="typed-cursor"></span>
+        </div>
+      </div>
 
-  <div class="keyboard-hint" id="keyboard-hint" style="display:none">цифры · Enter → ответ · Backspace → стереть</div>
+      <div class="keyboard-hint" id="keyboard-hint" style="display:none">цифры · Enter → ответ · Backspace → стереть</div>
 
-  <div class="choices-grid" id="choices-grid" style="display:none">
-    <button class="choice-btn" id="c0" onclick="selectChoice(0)"></button>
-    <button class="choice-btn" id="c1" onclick="selectChoice(1)"></button>
-    <button class="choice-btn" id="c2" onclick="selectChoice(2)"></button>
-    <button class="choice-btn" id="c3" onclick="selectChoice(3)"></button>
-  </div>
+      <div class="choices-grid" id="choices-grid" style="display:none">
+        <button class="choice-btn" id="c0" onclick="selectChoice(0)"></button>
+        <button class="choice-btn" id="c1" onclick="selectChoice(1)"></button>
+        <button class="choice-btn" id="c2" onclick="selectChoice(2)"></button>
+        <button class="choice-btn" id="c3" onclick="selectChoice(3)"></button>
+      </div>
 
-  <div class="screen-keyboard" id="screen-keyboard" style="display:none">
-    <div class="sk-row">
-      <button class="sk-btn" onclick="skPress('7')">7</button>
-      <button class="sk-btn" onclick="skPress('8')">8</button>
-      <button class="sk-btn" onclick="skPress('9')">9</button>
-    </div>
-    <div class="sk-row">
-      <button class="sk-btn" onclick="skPress('4')">4</button>
-      <button class="sk-btn" onclick="skPress('5')">5</button>
-      <button class="sk-btn" onclick="skPress('6')">6</button>
-    </div>
-    <div class="sk-row">
-      <button class="sk-btn" onclick="skPress('1')">1</button>
-      <button class="sk-btn" onclick="skPress('2')">2</button>
-      <button class="sk-btn" onclick="skPress('3')">3</button>
-    </div>
-    <div class="sk-row">
-      <button class="sk-btn" onclick="skPress('back')">⌫</button>
-      <button class="sk-btn" onclick="skPress('0')">0</button>
-      <button class="sk-btn sk-enter" onclick="skPress('enter')">OK</button>
-    </div>
+      <div class="screen-keyboard" id="screen-keyboard" style="display:none">
+        <div class="sk-row">
+          <button class="sk-btn" onclick="skPress('7')">7</button>
+          <button class="sk-btn" onclick="skPress('8')">8</button>
+          <button class="sk-btn" onclick="skPress('9')">9</button>
+        </div>
+        <div class="sk-row">
+          <button class="sk-btn" onclick="skPress('4')">4</button>
+          <button class="sk-btn" onclick="skPress('5')">5</button>
+          <button class="sk-btn" onclick="skPress('6')">6</button>
+        </div>
+        <div class="sk-row">
+          <button class="sk-btn" onclick="skPress('1')">1</button>
+          <button class="sk-btn" onclick="skPress('2')">2</button>
+          <button class="sk-btn" onclick="skPress('3')">3</button>
+        </div>
+        <div class="sk-row">
+          <button class="sk-btn" onclick="skPress('back')">⌫</button>
+          <button class="sk-btn" onclick="skPress('0')">0</button>
+          <button class="sk-btn sk-enter" onclick="skPress('enter')">OK</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="practice-guide" id="practice-guide" aria-live="polite"></aside>
   </div>
 </div>
 
@@ -376,6 +456,8 @@
 // ── SETTINGS ──
 let selectedOps       = ['×'];
 let selectedRange     = 10;
+let selectedFocus     = 'any';
+let showAnswerGuide   = true;
 let selectedInputMode = 'choices';
 let selectedGameMode  = 'classic';
 let classicCount      = 20;
@@ -496,12 +578,40 @@ function toggleOp(btn) {
     selectedOps.push(op);
     btn.classList.add('selected');
   }
+  renderPracticeGuide();
 }
 
-function selectRange(btn) {
-  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedRange = parseInt(btn.dataset.range);
+function selectRange(control) {
+  selectedRange = parseInt(control.value || control.dataset.range);
+  updateFocusOptions();
+  renderPracticeGuide();
+}
+
+function selectFocus(control) {
+  selectedFocus = control.value;
+  renderPracticeGuide();
+}
+
+function toggleGuide(control) {
+  showAnswerGuide = control.checked;
+  renderPracticeGuide();
+}
+
+function updateFocusOptions() {
+  const select = document.getElementById('focus-select');
+  if (!select) return;
+
+  const previous = selectedFocus;
+  select.innerHTML = '<option value="any">любые числа</option>';
+  for (let i = 1; i <= selectedRange; i++) {
+    const option = document.createElement('option');
+    option.value = String(i);
+    option.textContent = `только на ${i}`;
+    select.appendChild(option);
+  }
+
+  selectedFocus = previous !== 'any' && Number(previous) <= selectedRange ? previous : 'any';
+  select.value = selectedFocus;
 }
 
 function selectGameMode(btn) {
@@ -531,12 +641,33 @@ function selectInputMode(btn) {
 // ── QUESTION GEN ──
 function generateQuestion() {
   const op = selectedOps[Math.floor(Math.random() * selectedOps.length)];
-  let a, b, answer;
-  if (op === '×') { a = randInt(1, selectedRange); b = randInt(1, selectedRange); answer = a * b; }
-  else if (op === '÷') { b = randInt(1, selectedRange); answer = randInt(1, selectedRange); a = b * answer; }
-  else if (op === '+') { a = randInt(1, selectedRange); b = randInt(1, selectedRange); answer = a + b; }
-  else { a = randInt(1, selectedRange); b = randInt(1, a); answer = a - b; }
+  const { a, b, answer } = getOperandPair(op);
   return { text: `${a} ${op} ${b}`, answer };
+}
+
+function getOperandPair(op) {
+  const fixed = selectedFocus === 'any' ? null : parseInt(selectedFocus);
+  let a, b, answer;
+
+  if (op === '×') {
+    a = fixed || randInt(1, selectedRange);
+    b = randInt(1, selectedRange);
+    answer = a * b;
+  } else if (op === '÷') {
+    b = fixed || randInt(1, selectedRange);
+    answer = randInt(1, selectedRange);
+    a = b * answer;
+  } else if (op === '+') {
+    a = randInt(1, selectedRange);
+    b = fixed || randInt(1, selectedRange);
+    answer = a + b;
+  } else {
+    b = fixed || randInt(1, selectedRange);
+    answer = randInt(0, selectedRange);
+    a = answer + b;
+  }
+
+  return { a, b, answer };
 }
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -564,10 +695,76 @@ function shuffle(arr) {
   return arr;
 }
 
+function renderPracticeGuide() {
+  const guide = document.getElementById('practice-guide');
+  if (!guide) return;
+
+  if (!showAnswerGuide) {
+    guide.classList.remove('show');
+    guide.innerHTML = '';
+    return;
+  }
+
+  const rows = buildGuideRows();
+  const title = selectedFocus === 'any'
+    ? `таблица 1–${selectedRange}`
+    : `только на ${selectedFocus}`;
+  const meta = rows.limited ? `первые ${rows.items.length}` : `${rows.items.length} ответов`;
+
+  guide.innerHTML = `
+    <div class="guide-head">
+      <div class="guide-title">${title}</div>
+      <div class="guide-meta">${meta}</div>
+    </div>
+    <div class="guide-list">
+      ${rows.items.map(row => `<div class="guide-row">${row.left} = <span>${row.answer}</span></div>`).join('')}
+    </div>
+  `;
+  guide.classList.add('show');
+}
+
+function buildGuideRows() {
+  const items = [];
+  const limit = selectedFocus === 'any' ? 240 : 420;
+
+  for (const op of selectedOps) {
+    if (selectedFocus === 'any') {
+      for (let a = 1; a <= selectedRange; a++) {
+        for (let b = 1; b <= selectedRange; b++) {
+          items.push(formatGuideRow(op, a, b));
+          if (items.length >= limit) return { items, limited: true };
+        }
+      }
+    } else {
+      const fixed = parseInt(selectedFocus);
+      for (let n = 1; n <= selectedRange; n++) {
+        items.push(formatFixedGuideRow(op, fixed, n));
+        if (items.length >= limit) return { items, limited: true };
+      }
+    }
+  }
+
+  return { items, limited: false };
+}
+
+function formatGuideRow(op, a, b) {
+  if (op === '×') return { left: `${a} × ${b}`, answer: a * b };
+  if (op === '÷') return { left: `${a * b} ÷ ${a}`, answer: b };
+  if (op === '+') return { left: `${a} + ${b}`, answer: a + b };
+  return { left: `${a + b} − ${a}`, answer: b };
+}
+
+function formatFixedGuideRow(op, fixed, n) {
+  if (op === '×') return { left: `${fixed} × ${n}`, answer: fixed * n };
+  if (op === '÷') return { left: `${fixed * n} ÷ ${fixed}`, answer: n };
+  if (op === '+') return { left: `${n} + ${fixed}`, answer: n + fixed };
+  return { left: `${n + fixed} − ${fixed}`, answer: n };
+}
+
 // ── START ──
 function startGame() {
   lastSettings = {
-    ops: [...selectedOps], range: selectedRange,
+    ops: [...selectedOps], range: selectedRange, focus: selectedFocus, showGuide: showAnswerGuide,
     inputMode: selectedInputMode, gameMode: selectedGameMode,
     classicCount, timedSeconds, survivalSeconds
   };
@@ -579,6 +776,7 @@ function startGame() {
 
   showScreen('game');
   setupInputMode();
+  renderPracticeGuide();
   setupTimer();
   nextQuestion();
 }
@@ -586,6 +784,8 @@ function startGame() {
 function restartGame() {
   selectedOps       = lastSettings.ops;
   selectedRange     = lastSettings.range;
+  selectedFocus     = lastSettings.focus || 'any';
+  showAnswerGuide   = lastSettings.showGuide !== false;
   selectedInputMode = lastSettings.inputMode;
   selectedGameMode  = lastSettings.gameMode;
   classicCount      = lastSettings.classicCount  || classicCount;
@@ -878,6 +1078,8 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
 }
+
+updateFocusOptions();
 </script>
 </body>
 </html>
