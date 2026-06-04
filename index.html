@@ -482,6 +482,7 @@ let survivalSeconds   = 120;
 let typedValue     = '';
 let currentAnswer  = 0;
 let currentGuideKey = '';
+let currentQuestion = null;
 let currentChoices = [];
 let correctCount   = 0;
 let wrongCount     = 0;
@@ -664,7 +665,7 @@ function selectInputMode(btn) {
 function generateQuestion() {
   const op = selectedOps[Math.floor(Math.random() * selectedOps.length)];
   const { a, b, answer } = getOperandPair(op);
-  return { text: `${a} ${op} ${b}`, answer };
+  return { text: `${a} ${op} ${b}`, op, a, b, answer };
 }
 
 function getOperandPair(op) {
@@ -722,9 +723,7 @@ function renderPracticeGuide() {
   if (!guide) return;
 
   const rows = buildGuideRows();
-  const title = selectedFocus === 'any'
-    ? `таблица 1–${selectedRange}`
-    : `только на ${selectedFocus}`;
+  const title = rows.title;
   const meta = rows.limited ? `первые ${rows.items.length}` : `${rows.items.length} ответов`;
   const buttonLabel = guideExpanded ? 'скрыть' : 'раскрыть';
   const buttonTitle = guideExpanded ? 'Скрыть готовые ответы' : 'Показать готовые ответы';
@@ -762,34 +761,37 @@ function getGuideKey(left, answer) {
 }
 
 function buildGuideRows() {
+  if (selectedFocus === 'any') return buildContextGuideRows();
+
   const items = [];
-  const limit = selectedFocus === 'any' ? 240 : 420;
+  const limit = 420;
 
   for (const op of selectedOps) {
-    if (selectedFocus === 'any') {
-      for (let a = 1; a <= selectedRange; a++) {
-        for (let b = 1; b <= selectedRange; b++) {
-          items.push(formatGuideRow(op, a, b));
-          if (items.length >= limit) return { items, limited: true };
-        }
-      }
-    } else {
-      const fixed = parseInt(selectedFocus);
-      for (let n = 1; n <= selectedRange; n++) {
-        items.push(formatFixedGuideRow(op, fixed, n));
-        if (items.length >= limit) return { items, limited: true };
-      }
+    const fixed = parseInt(selectedFocus);
+    for (let n = 1; n <= selectedRange; n++) {
+      items.push(formatFixedGuideRow(op, fixed, n));
+      if (items.length >= limit) return { title: `только на ${selectedFocus}`, items, limited: true };
     }
   }
 
-  return { items, limited: false };
+  return { title: `только на ${selectedFocus}`, items, limited: false };
 }
 
-function formatGuideRow(op, a, b) {
-  if (op === '×') return { left: `${a} × ${b}`, answer: a * b };
-  if (op === '÷') return { left: `${a * b} ÷ ${a}`, answer: b };
-  if (op === '+') return { left: `${a} + ${b}`, answer: a + b };
-  return { left: `${a + b} − ${a}`, answer: b };
+function buildContextGuideRows() {
+  if (!currentQuestion) return { title: `таблица 1–${selectedRange}`, items: [], limited: false };
+
+  const anchor = getGuideAnchor(currentQuestion);
+  const items = [];
+  for (let n = 1; n <= selectedRange; n++) {
+    items.push(formatFixedGuideRow(currentQuestion.op, anchor, n));
+  }
+
+  return { title: `таблица на ${anchor}`, items, limited: false };
+}
+
+function getGuideAnchor(question) {
+  if (question.op === '×') return question.a;
+  return question.b;
 }
 
 function formatFixedGuideRow(op, fixed, n) {
@@ -809,6 +811,7 @@ function startGame() {
   correctCount = 0; wrongCount = 0; streak = 0; bestStreak = 0;
   questionNum = 0; locked = false; gameOver = false;
   currentGuideKey = '';
+  currentQuestion = null;
   guideExpanded = showAnswerGuide;
   warnedHalf = false; warnedCritical = false;
   gameStartTime = Date.now();
@@ -932,6 +935,7 @@ function nextQuestion() {
   }
 
   const q = generateQuestion();
+  currentQuestion = q;
   currentAnswer = q.answer;
   currentGuideKey = getGuideKey(q.text, q.answer);
   typedValue = '';
@@ -963,6 +967,7 @@ function nextQuestion() {
   }
 
   questionNum++;
+  renderPracticeGuide();
   highlightGuideAnswer();
   updateHUD();
 }

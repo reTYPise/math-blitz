@@ -17,5 +17,8 @@ assert.match(html, /function renderPracticeGuide\(/, 'guide should render answer
 assert.match(html, /function setGuideExpanded\(/, 'guide should be expandable during the game');
 assert.match(html, /function highlightGuideAnswer\(/, 'guide should highlight the current answer row');
 assert.match(html, /function getOperandPair\(/, 'question generator should support a fixed operand');
+assert.match(html, /currentQuestion\s*=/, 'current question should be tracked for contextual guide rows');
+assert.match(html, /function getGuideAnchor\(/, 'guide should choose an anchor from the current question');
+assert.match(html, /function buildContextGuideRows\(/, 'any-number mode should render a contextual guide instead of the full table');
 assert.match(html, /\.guide-row\.current/, 'guide rows should have a current-answer highlight state');
 assert.match(html, /grid-template-columns:\s*minmax\(0,\s*520px\)\s+minmax\(260px,\s*1fr\)/, 'desktop game layout should use the free horizontal space');
