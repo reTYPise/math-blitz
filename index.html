@@ -3,8 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="math-blitz — бесплатный онлайн-тренажер устного счета для детей и взрослых. Тренируйте таблицу умножения, деление, сложение и вычитание в случайном или последовательном порядке, выбирайте диапазон чисел и закрепляйте быстрые ответы с удобными подсказками.">
+<meta name="keywords" content="тренажер устного счета, таблица умножения онлайн, math blitz, примеры по математике, умножение, деление, сложение, вычитание">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="math-blitz — тренажер устного счета онлайн">
+<meta property="og:description" content="Онлайн-тренажер для быстрой практики таблицы умножения, деления, сложения и вычитания с режимами порядка, случайных вопросов и подсказками.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://retypise.github.io/math-blitz/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-<title>math-blitz</title>
+<title>Тренажер устного счета math-blitz — таблица умножения онлайн</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
 
@@ -20,7 +27,6 @@
     --accent4: #ff9f43;
     --text: #f0f0f5;
     --muted: #555568;
-    --ui-scale: 1;
     --mono: 'Space Mono', monospace;
     --sans: 'Syne', sans-serif;
   }
@@ -79,14 +85,10 @@
   .toggle-hint { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); white-space: nowrap; }
   .toggle-stack { display: grid; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 18px; }
   .toggle-stack .toggle-row { margin-bottom: 0; }
-  .scale-row {
-    width: 100%; max-width: 500px; margin-bottom: 18px; padding: 10px 12px;
-    background: var(--surface); border: 1px solid var(--border);
+  .seo-description {
+    width: 100%; max-width: 500px; margin-top: 18px; color: var(--muted);
+    font-size: 0.78rem; line-height: 1.65;
   }
-  .scale-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
-  .scale-label { font-size: 0.78rem; font-weight: 700; color: var(--text); }
-  .scale-value { font-family: var(--mono); font-size: 0.68rem; color: var(--accent); }
-  .scale-row input { width: 100%; accent-color: var(--accent); }
 
   /* GAME MODE */
   .game-mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 14px; }
@@ -131,10 +133,9 @@
   #screen-game { padding: 14px 20px 16px; gap: 0; justify-content: flex-start; }
 
   .game-shell {
-    width: 100%; max-width: min(calc(1040px * var(--ui-scale)), 100%);
-    min-height: calc(100vh - 30px);
-    display: grid; grid-template-columns: minmax(0, calc(520px * var(--ui-scale))) minmax(260px, 1fr);
-    gap: calc(16px * var(--ui-scale)); align-items: start;
+    width: 100%; max-width: 1040px; min-height: calc(100vh - 30px);
+    display: grid; grid-template-columns: minmax(0, 520px) minmax(260px, 1fr);
+    gap: 16px; align-items: start;
   }
   .game-main { width: 100%; min-width: 0; }
 
@@ -174,7 +175,7 @@
   }
   .question-box.correct { border-color: var(--accent3); }
   .question-box.wrong { border-color: var(--accent2); }
-  .question-text { font-family: var(--mono); font-size: clamp(2rem, calc(7vw * var(--ui-scale)), calc(4rem * var(--ui-scale))); font-weight: 700; letter-spacing: -2px; line-height: 1; }
+  .question-text { font-family: var(--mono); font-size: clamp(2rem, 7vw, 4rem); font-weight: 700; letter-spacing: -2px; line-height: 1; }
   .question-answer { font-family: var(--mono); font-size: clamp(1rem, 3.5vw, 1.6rem); color: var(--muted); margin-top: 8px; min-height: 1.7rem; transition: color 0.2s; }
   .question-answer.show-wrong { color: var(--accent2); }
   .question-answer.show-correct { color: var(--accent3); }
@@ -187,8 +188,8 @@
   .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
   .choice-btn {
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: var(--mono); font-size: clamp(1.1rem, calc(3.5vw * var(--ui-scale)), calc(1.6rem * var(--ui-scale))); font-weight: 700;
-    padding: calc(17px * var(--ui-scale)); cursor: pointer; transition: all 0.12s;
+    font-family: var(--mono); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: 700;
+    padding: 17px; cursor: pointer; transition: all 0.12s;
   }
   .choice-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .choice-btn:disabled { cursor: default; }
@@ -300,7 +301,7 @@
 
 <!-- ════════ MENU ════════ -->
 <div class="screen active" id="screen-menu">
-  <div class="logo">math<span>-</span>blitz</div>
+  <h1 class="logo">math<span>-</span>blitz</h1>
   <div class="tagline">скорость мышления</div>
 
   <div class="section-label">операция</div>
@@ -337,21 +338,17 @@
       </label>
       <div class="toggle-hint">справа в игре</div>
     </div>
-    <div class="toggle-row">
-      <label for="ordered-first-toggle">
-        <input id="ordered-first-toggle" type="checkbox" onchange="toggleOrderedFirst(this)">
-        сначала по порядку
-      </label>
-      <div class="toggle-hint">потом случайно</div>
-    </div>
   </div>
 
-  <div class="scale-row">
-    <div class="scale-head">
-      <div class="scale-label">масштаб интерфейса</div>
-      <div class="scale-value" id="ui-scale-value">100%</div>
-    </div>
-    <input id="ui-scale-slider" type="range" min="85" max="130" step="5" value="100" oninput="setUiScale(this.value)">
+  <div class="settings-row">
+    <label class="select-field">
+      <span>порядок вопросов</span>
+      <select id="sequence-mode-select" onchange="selectSequenceMode(this)">
+        <option value="random" selected>всегда случайно</option>
+        <option value="ordered-first">сначала по порядку, потом случайно</option>
+        <option value="ordered">всегда по порядку</option>
+      </select>
+    </label>
   </div>
 
   <div class="section-label">режим игры</div>
@@ -407,6 +404,9 @@
   </div>
 
   <button class="start-btn" onclick="startGame()">СТАРТ →</button>
+  <div class="seo-description">
+    math-blitz — это онлайн-тренажер устного счета для регулярной практики математики без установки приложений и лишних отвлечений. Здесь можно быстро повторять таблицу умножения, тренировать деление, сложение и вычитание, выбирать диапазон чисел от простого 1–10 до более сложных вариантов и настраивать порядок вопросов под конкретную цель. Инструмент подходит для школьников, родителей, репетиторов и взрослых, которые хотят освежить быстрый счет в уме. Можно тренироваться в случайном порядке, проходить примеры строго последовательно или сначала закрепить таблицу по порядку, а затем перейти к случайным заданиям. Для удобства рядом с задачей есть справочник с готовыми ответами: он показывает только актуальную таблицу для текущего примера и подсвечивает нужную строку, чтобы можно было быстро свериться и не терять фокус. Такой формат помогает учить таблицу умножения на 2, 3, 4, 5, 6, 7, 8, 9 и 10, отрабатывать деление на выбранное число, повторять примеры на сложение и вычитание, а также постепенно повышать скорость реакции. Режимы с ограничением по времени подходят для коротких тренировок, классический режим — для спокойного закрепления заданного количества вопросов, а режим выживания помогает удерживать концентрацию и следить за серией правильных ответов. Тренажер работает прямо в браузере, адаптируется под экран и подходит как для занятий дома, так и для быстрых математических разминок на уроке.
+  </div>
 </div>
 
 <!-- ════════ GAME ════════ -->
@@ -501,8 +501,7 @@ let selectedRange     = 10;
 let selectedFocus     = 'any';
 let showAnswerGuide   = true;
 let guideExpanded     = true;
-let orderedFirst      = false;
-let uiScale           = 1;
+let sequenceMode      = 'random';
 let selectedInputMode = 'choices';
 let selectedGameMode  = 'classic';
 let classicCount      = 20;
@@ -518,6 +517,7 @@ let currentChoices = [];
 let lastQuestion = null;
 let orderedQueue = [];
 let orderedQueueActive = false;
+let orderedFirstDone = false;
 let correctCount   = 0;
 let wrongCount     = 0;
 let streak         = 0;
@@ -657,21 +657,15 @@ function setGuideExpanded(expanded) {
   highlightGuideAnswer();
 }
 
-function toggleOrderedFirst(control) {
-  orderedFirst = control.checked;
+function selectSequenceMode(control) {
+  sequenceMode = control.value;
   resetQuestionSequence();
-}
-
-function setUiScale(value) {
-  uiScale = parseInt(value) / 100;
-  document.documentElement.style.setProperty('--ui-scale', uiScale);
-  const label = document.getElementById('ui-scale-value');
-  if (label) label.textContent = `${Math.round(uiScale * 100)}%`;
 }
 
 function resetQuestionSequence() {
   orderedQueue = [];
   orderedQueueActive = false;
+  orderedFirstDone = false;
   lastQuestion = null;
 }
 
@@ -726,14 +720,23 @@ function generateQuestion() {
 }
 
 function getNextQuestion() {
-  if (orderedFirst && !orderedQueueActive) {
-    orderedQueue = buildOrderedQueue();
-    orderedQueueActive = orderedQueue.length > 0;
+  if (sequenceMode === 'ordered') {
+    if (orderedQueue.length === 0) orderedQueue = buildOrderedQueue();
+    const q = orderedQueue.shift();
+    lastQuestion = q;
+    return q;
   }
 
-  if (orderedQueueActive && orderedQueue.length > 0) {
+  if (sequenceMode === 'ordered-first' && !orderedFirstDone) {
+    if (!orderedQueueActive) {
+      orderedQueue = buildOrderedQueue();
+      orderedQueueActive = orderedQueue.length > 0;
+    }
     const q = orderedQueue.shift();
-    if (orderedQueue.length === 0) orderedQueueActive = false;
+    if (orderedQueue.length === 0) {
+      orderedQueueActive = false;
+      orderedFirstDone = true;
+    }
     lastQuestion = q;
     return q;
   }
@@ -908,7 +911,7 @@ function formatFixedGuideRow(op, fixed, n) {
 function startGame() {
   lastSettings = {
     ops: [...selectedOps], range: selectedRange, focus: selectedFocus, showGuide: showAnswerGuide,
-    orderedFirst, uiScale,
+    sequenceMode,
     inputMode: selectedInputMode, gameMode: selectedGameMode,
     classicCount, timedSeconds, survivalSeconds
   };
@@ -923,7 +926,6 @@ function startGame() {
   totalQuestions = selectedGameMode === 'classic' ? classicCount : Infinity;
 
   showScreen('game');
-  setUiScale(Math.round(uiScale * 100));
   setupInputMode();
   renderPracticeGuide();
   setupTimer();
@@ -935,8 +937,7 @@ function restartGame() {
   selectedRange     = lastSettings.range;
   selectedFocus     = lastSettings.focus || 'any';
   showAnswerGuide   = lastSettings.showGuide !== false;
-  orderedFirst      = !!lastSettings.orderedFirst;
-  uiScale           = lastSettings.uiScale || uiScale;
+  sequenceMode      = lastSettings.sequenceMode || 'random';
   selectedInputMode = lastSettings.inputMode;
   selectedGameMode  = lastSettings.gameMode;
   classicCount      = lastSettings.classicCount  || classicCount;
@@ -1235,7 +1236,6 @@ function showScreen(name) {
 }
 
 updateFocusOptions();
-setUiScale(100);
 </script>
 </body>
 </html>
