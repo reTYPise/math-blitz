@@ -20,6 +20,7 @@
     --accent4: #ff9f43;
     --text: #f0f0f5;
     --muted: #555568;
+    --ui-scale: 1;
     --mono: 'Space Mono', monospace;
     --sans: 'Syne', sans-serif;
   }
@@ -76,6 +77,16 @@
   .toggle-row label { display: flex; align-items: center; gap: 9px; cursor: pointer; color: var(--text); font-size: 0.78rem; font-weight: 700; }
   .toggle-row input { width: 16px; height: 16px; accent-color: var(--accent); }
   .toggle-hint { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); white-space: nowrap; }
+  .toggle-stack { display: grid; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 18px; }
+  .toggle-stack .toggle-row { margin-bottom: 0; }
+  .scale-row {
+    width: 100%; max-width: 500px; margin-bottom: 18px; padding: 10px 12px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .scale-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .scale-label { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .scale-value { font-family: var(--mono); font-size: 0.68rem; color: var(--accent); }
+  .scale-row input { width: 100%; accent-color: var(--accent); }
 
   /* GAME MODE */
   .game-mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 14px; }
@@ -120,9 +131,10 @@
   #screen-game { padding: 14px 20px 16px; gap: 0; justify-content: flex-start; }
 
   .game-shell {
-    width: 100%; max-width: 1040px; min-height: calc(100vh - 30px);
-    display: grid; grid-template-columns: minmax(0, 520px) minmax(260px, 1fr);
-    gap: 16px; align-items: start;
+    width: 100%; max-width: min(calc(1040px * var(--ui-scale)), 100%);
+    min-height: calc(100vh - 30px);
+    display: grid; grid-template-columns: minmax(0, calc(520px * var(--ui-scale))) minmax(260px, 1fr);
+    gap: calc(16px * var(--ui-scale)); align-items: start;
   }
   .game-main { width: 100%; min-width: 0; }
 
@@ -162,7 +174,7 @@
   }
   .question-box.correct { border-color: var(--accent3); }
   .question-box.wrong { border-color: var(--accent2); }
-  .question-text { font-family: var(--mono); font-size: clamp(2rem, 7vw, 4rem); font-weight: 700; letter-spacing: -2px; line-height: 1; }
+  .question-text { font-family: var(--mono); font-size: clamp(2rem, calc(7vw * var(--ui-scale)), calc(4rem * var(--ui-scale))); font-weight: 700; letter-spacing: -2px; line-height: 1; }
   .question-answer { font-family: var(--mono); font-size: clamp(1rem, 3.5vw, 1.6rem); color: var(--muted); margin-top: 8px; min-height: 1.7rem; transition: color 0.2s; }
   .question-answer.show-wrong { color: var(--accent2); }
   .question-answer.show-correct { color: var(--accent3); }
@@ -175,8 +187,8 @@
   .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
   .choice-btn {
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: var(--mono); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: 700;
-    padding: 17px; cursor: pointer; transition: all 0.12s;
+    font-family: var(--mono); font-size: clamp(1.1rem, calc(3.5vw * var(--ui-scale)), calc(1.6rem * var(--ui-scale))); font-weight: 700;
+    padding: calc(17px * var(--ui-scale)); cursor: pointer; transition: all 0.12s;
   }
   .choice-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .choice-btn:disabled { cursor: default; }
@@ -317,12 +329,29 @@
       <select id="focus-select" onchange="selectFocus(this)"></select>
     </label>
   </div>
-  <div class="toggle-row">
-    <label for="guide-toggle">
-      <input id="guide-toggle" type="checkbox" checked onchange="toggleGuide(this)">
-      показывать готовые ответы
-    </label>
-    <div class="toggle-hint">справа в игре</div>
+  <div class="toggle-stack">
+    <div class="toggle-row">
+      <label for="guide-toggle">
+        <input id="guide-toggle" type="checkbox" checked onchange="toggleGuide(this)">
+        показывать готовые ответы
+      </label>
+      <div class="toggle-hint">справа в игре</div>
+    </div>
+    <div class="toggle-row">
+      <label for="ordered-first-toggle">
+        <input id="ordered-first-toggle" type="checkbox" onchange="toggleOrderedFirst(this)">
+        сначала по порядку
+      </label>
+      <div class="toggle-hint">потом случайно</div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="scale-head">
+      <div class="scale-label">масштаб интерфейса</div>
+      <div class="scale-value" id="ui-scale-value">100%</div>
+    </div>
+    <input id="ui-scale-slider" type="range" min="85" max="130" step="5" value="100" oninput="setUiScale(this.value)">
   </div>
 
   <div class="section-label">режим игры</div>
@@ -472,6 +501,8 @@ let selectedRange     = 10;
 let selectedFocus     = 'any';
 let showAnswerGuide   = true;
 let guideExpanded     = true;
+let orderedFirst      = false;
+let uiScale           = 1;
 let selectedInputMode = 'choices';
 let selectedGameMode  = 'classic';
 let classicCount      = 20;
@@ -484,6 +515,9 @@ let currentAnswer  = 0;
 let currentGuideKey = '';
 let currentQuestion = null;
 let currentChoices = [];
+let lastQuestion = null;
+let orderedQueue = [];
+let orderedQueueActive = false;
 let correctCount   = 0;
 let wrongCount     = 0;
 let streak         = 0;
@@ -594,17 +628,20 @@ function toggleOp(btn) {
     selectedOps.push(op);
     btn.classList.add('selected');
   }
+  resetQuestionSequence();
   renderPracticeGuide();
 }
 
 function selectRange(control) {
   selectedRange = parseInt(control.value || control.dataset.range);
   updateFocusOptions();
+  resetQuestionSequence();
   renderPracticeGuide();
 }
 
 function selectFocus(control) {
   selectedFocus = control.value;
+  resetQuestionSequence();
   renderPracticeGuide();
 }
 
@@ -618,6 +655,24 @@ function setGuideExpanded(expanded) {
   guideExpanded = expanded;
   renderPracticeGuide();
   highlightGuideAnswer();
+}
+
+function toggleOrderedFirst(control) {
+  orderedFirst = control.checked;
+  resetQuestionSequence();
+}
+
+function setUiScale(value) {
+  uiScale = parseInt(value) / 100;
+  document.documentElement.style.setProperty('--ui-scale', uiScale);
+  const label = document.getElementById('ui-scale-value');
+  if (label) label.textContent = `${Math.round(uiScale * 100)}%`;
+}
+
+function resetQuestionSequence() {
+  orderedQueue = [];
+  orderedQueueActive = false;
+  lastQuestion = null;
 }
 
 function updateFocusOptions() {
@@ -641,6 +696,7 @@ function selectGameMode(btn) {
   document.querySelectorAll('.gm-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   selectedGameMode = btn.dataset.gm;
+  resetQuestionSequence();
   document.getElementById('opts-classic').style.display  = selectedGameMode === 'classic'  ? 'block' : 'none';
   document.getElementById('opts-timed').style.display    = selectedGameMode === 'timed'    ? 'block' : 'none';
   document.getElementById('opts-survival').style.display = selectedGameMode === 'survival' ? 'block' : 'none';
@@ -653,6 +709,7 @@ function selectSub(mode, btn) {
   if (mode === 'classic')  classicCount = v;
   if (mode === 'timed')    timedSeconds = v;
   if (mode === 'survival') survivalSeconds = v;
+  resetQuestionSequence();
 }
 
 function selectInputMode(btn) {
@@ -666,6 +723,52 @@ function generateQuestion() {
   const op = selectedOps[Math.floor(Math.random() * selectedOps.length)];
   const { a, b, answer } = getOperandPair(op);
   return { text: `${a} ${op} ${b}`, op, a, b, answer };
+}
+
+function getNextQuestion() {
+  if (orderedFirst && !orderedQueueActive) {
+    orderedQueue = buildOrderedQueue();
+    orderedQueueActive = orderedQueue.length > 0;
+  }
+
+  if (orderedQueueActive && orderedQueue.length > 0) {
+    const q = orderedQueue.shift();
+    if (orderedQueue.length === 0) orderedQueueActive = false;
+    lastQuestion = q;
+    return q;
+  }
+
+  let q = generateQuestion();
+  let attempts = 0;
+  while (lastQuestion && isSameQuestion(q, lastQuestion) && attempts < 30) {
+    q = generateQuestion();
+    attempts++;
+  }
+  lastQuestion = q;
+  return q;
+}
+
+function buildOrderedQueue() {
+  const queue = [];
+  selectedOps.forEach(op => {
+    const fixed = selectedFocus === 'any' ? 1 : parseInt(selectedFocus);
+    for (let n = 1; n <= selectedRange; n++) {
+      const pair = getOrderedOperandPair(op, fixed, n);
+      queue.push({ text: `${pair.a} ${op} ${pair.b}`, op, a: pair.a, b: pair.b, answer: pair.answer });
+    }
+  });
+  return queue;
+}
+
+function getOrderedOperandPair(op, fixed, n) {
+  if (op === '×') return { a: fixed, b: n, answer: fixed * n };
+  if (op === '÷') return { a: fixed * n, b: fixed, answer: n };
+  if (op === '+') return { a: n, b: fixed, answer: n + fixed };
+  return { a: n + fixed, b: fixed, answer: n };
+}
+
+function isSameQuestion(a, b) {
+  return !!a && !!b && a.op === b.op && a.a === b.a && a.b === b.b;
 }
 
 function getOperandPair(op) {
@@ -805,6 +908,7 @@ function formatFixedGuideRow(op, fixed, n) {
 function startGame() {
   lastSettings = {
     ops: [...selectedOps], range: selectedRange, focus: selectedFocus, showGuide: showAnswerGuide,
+    orderedFirst, uiScale,
     inputMode: selectedInputMode, gameMode: selectedGameMode,
     classicCount, timedSeconds, survivalSeconds
   };
@@ -812,12 +916,14 @@ function startGame() {
   questionNum = 0; locked = false; gameOver = false;
   currentGuideKey = '';
   currentQuestion = null;
+  resetQuestionSequence();
   guideExpanded = showAnswerGuide;
   warnedHalf = false; warnedCritical = false;
   gameStartTime = Date.now();
   totalQuestions = selectedGameMode === 'classic' ? classicCount : Infinity;
 
   showScreen('game');
+  setUiScale(Math.round(uiScale * 100));
   setupInputMode();
   renderPracticeGuide();
   setupTimer();
@@ -829,6 +935,8 @@ function restartGame() {
   selectedRange     = lastSettings.range;
   selectedFocus     = lastSettings.focus || 'any';
   showAnswerGuide   = lastSettings.showGuide !== false;
+  orderedFirst      = !!lastSettings.orderedFirst;
+  uiScale           = lastSettings.uiScale || uiScale;
   selectedInputMode = lastSettings.inputMode;
   selectedGameMode  = lastSettings.gameMode;
   classicCount      = lastSettings.classicCount  || classicCount;
@@ -934,7 +1042,7 @@ function nextQuestion() {
     return;
   }
 
-  const q = generateQuestion();
+  const q = getNextQuestion();
   currentQuestion = q;
   currentAnswer = q.answer;
   currentGuideKey = getGuideKey(q.text, q.answer);
@@ -1127,6 +1235,7 @@ function showScreen(name) {
 }
 
 updateFocusOptions();
+setUiScale(100);
 </script>
 </body>
 </html>
