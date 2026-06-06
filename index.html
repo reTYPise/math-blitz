@@ -447,32 +447,32 @@
       <div class="keyboard-hint" id="keyboard-hint" style="display:none">цифры · Enter → ответ · Backspace → стереть</div>
 
       <div class="choices-grid" id="choices-grid" style="display:none">
-        <button class="choice-btn" id="c0" onclick="selectChoice(0)"></button>
-        <button class="choice-btn" id="c1" onclick="selectChoice(1)"></button>
-        <button class="choice-btn" id="c2" onclick="selectChoice(2)"></button>
-        <button class="choice-btn" id="c3" onclick="selectChoice(3)"></button>
+        <button class="choice-btn" id="c0" data-choice-idx="0"></button>
+        <button class="choice-btn" id="c1" data-choice-idx="1"></button>
+        <button class="choice-btn" id="c2" data-choice-idx="2"></button>
+        <button class="choice-btn" id="c3" data-choice-idx="3"></button>
       </div>
 
       <div class="screen-keyboard" id="screen-keyboard" style="display:none">
         <div class="sk-row">
-          <button class="sk-btn" onclick="skPress('7')">7</button>
-          <button class="sk-btn" onclick="skPress('8')">8</button>
-          <button class="sk-btn" onclick="skPress('9')">9</button>
+          <button class="sk-btn" data-sk-key="7">7</button>
+          <button class="sk-btn" data-sk-key="8">8</button>
+          <button class="sk-btn" data-sk-key="9">9</button>
         </div>
         <div class="sk-row">
-          <button class="sk-btn" onclick="skPress('4')">4</button>
-          <button class="sk-btn" onclick="skPress('5')">5</button>
-          <button class="sk-btn" onclick="skPress('6')">6</button>
+          <button class="sk-btn" data-sk-key="4">4</button>
+          <button class="sk-btn" data-sk-key="5">5</button>
+          <button class="sk-btn" data-sk-key="6">6</button>
         </div>
         <div class="sk-row">
-          <button class="sk-btn" onclick="skPress('1')">1</button>
-          <button class="sk-btn" onclick="skPress('2')">2</button>
-          <button class="sk-btn" onclick="skPress('3')">3</button>
+          <button class="sk-btn" data-sk-key="1">1</button>
+          <button class="sk-btn" data-sk-key="2">2</button>
+          <button class="sk-btn" data-sk-key="3">3</button>
         </div>
         <div class="sk-row">
-          <button class="sk-btn" onclick="skPress('back')">⌫</button>
-          <button class="sk-btn" onclick="skPress('0')">0</button>
-          <button class="sk-btn sk-enter" onclick="skPress('enter')">OK</button>
+          <button class="sk-btn" data-sk-key="back">⌫</button>
+          <button class="sk-btn" data-sk-key="0">0</button>
+          <button class="sk-btn sk-enter" data-sk-key="enter">OK</button>
         </div>
       </div>
     </main>
@@ -686,6 +686,43 @@ function updateFocusOptions() {
   select.value = selectedFocus;
 }
 
+function syncSettingsFromControls() {
+  const rangeSelect = document.getElementById('range-select');
+  const focusSelect = document.getElementById('focus-select');
+  const guideToggle = document.getElementById('guide-toggle');
+  const sequenceSelect = document.getElementById('sequence-mode-select');
+  const selectedGameButton = document.querySelector('.gm-btn.selected');
+  const selectedInputButton = document.querySelector('.mode-btn.selected');
+  const visibleFocus = focusSelect?.value;
+
+  selectedRange = parseInt(rangeSelect?.value || selectedRange);
+  updateFocusOptions();
+  if (visibleFocus && (visibleFocus === 'any' || Number(visibleFocus) <= selectedRange)) {
+    selectedFocus = visibleFocus;
+    const updatedFocusSelect = document.getElementById('focus-select');
+    if (updatedFocusSelect) updatedFocusSelect.value = selectedFocus;
+  }
+  showAnswerGuide = guideToggle ? guideToggle.checked : showAnswerGuide;
+  sequenceMode = sequenceSelect?.value || sequenceMode;
+  selectedGameMode = selectedGameButton?.dataset.gm || selectedGameMode;
+  selectedInputMode = selectedInputButton?.dataset.mode || selectedInputMode;
+
+  const activeOptions = document.getElementById('opts-' + selectedGameMode);
+  const selectedSub = activeOptions?.querySelector('.sub-btn.selected');
+  if (selectedSub) selectSubValue(selectedGameMode, parseInt(selectedSub.dataset.val));
+}
+
+function syncControlsFromState() {
+  const rangeSelect = document.getElementById('range-select');
+  const guideToggle = document.getElementById('guide-toggle');
+  const sequenceSelect = document.getElementById('sequence-mode-select');
+
+  if (rangeSelect) rangeSelect.value = String(selectedRange);
+  updateFocusOptions();
+  if (guideToggle) guideToggle.checked = showAnswerGuide;
+  if (sequenceSelect) sequenceSelect.value = sequenceMode;
+}
+
 function selectGameMode(btn) {
   document.querySelectorAll('.gm-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -700,10 +737,14 @@ function selectSub(mode, btn) {
   btn.closest('.sub-grid').querySelectorAll('.sub-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   const v = parseInt(btn.dataset.val);
-  if (mode === 'classic')  classicCount = v;
-  if (mode === 'timed')    timedSeconds = v;
-  if (mode === 'survival') survivalSeconds = v;
+  selectSubValue(mode, v);
   resetQuestionSequence();
+}
+
+function selectSubValue(mode, value) {
+  if (mode === 'classic')  classicCount = value;
+  if (mode === 'timed')    timedSeconds = value;
+  if (mode === 'survival') survivalSeconds = value;
 }
 
 function selectInputMode(btn) {
@@ -909,6 +950,7 @@ function formatFixedGuideRow(op, fixed, n) {
 
 // ── START ──
 function startGame() {
+  syncSettingsFromControls();
   lastSettings = {
     ops: [...selectedOps], range: selectedRange, focus: selectedFocus, showGuide: showAnswerGuide,
     sequenceMode,
@@ -1173,6 +1215,29 @@ function skPress(key) {
   else appendDigit(key);
 }
 
+function handleFastGameButtonPress(event) {
+  if (event.type === 'mousedown' && window.PointerEvent) return;
+  if (event.button !== 0) return;
+
+  const choiceButton = event.target.closest('.choice-btn');
+  if (choiceButton) {
+    event.preventDefault();
+    selectChoice(parseInt(choiceButton.dataset.choiceIdx));
+    return;
+  }
+
+  const screenKey = event.target.closest('.sk-btn');
+  if (screenKey) {
+    event.preventDefault();
+    skPress(screenKey.dataset.skKey);
+  }
+}
+
+document.getElementById('choices-grid').addEventListener('pointerdown', handleFastGameButtonPress);
+document.getElementById('screen-keyboard').addEventListener('pointerdown', handleFastGameButtonPress);
+document.getElementById('choices-grid').addEventListener('mousedown', handleFastGameButtonPress);
+document.getElementById('screen-keyboard').addEventListener('mousedown', handleFastGameButtonPress);
+
 document.addEventListener('keydown', e => {
   if (!document.getElementById('screen-game').classList.contains('active')) return;
   if (selectedInputMode === 'keyboard' || selectedInputMode === 'screen') {
@@ -1228,7 +1293,10 @@ function showScore() {
   showScreen('score');
 }
 
-function goMenu() { showScreen('menu'); }
+function goMenu() {
+  syncControlsFromState();
+  showScreen('menu');
+}
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
