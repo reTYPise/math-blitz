@@ -160,10 +160,6 @@ html, body {
 /* ── TRAINING PANEL ── */
 .training-layout { min-width: 0; }
 .training-main { min-width: 0; }
-.training-top-row {
-  display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start;
-  margin-bottom: 0;
-}
 .section-label {
   font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
   color: var(--muted); margin-bottom: 8px; margin-top: 4px;
@@ -223,7 +219,7 @@ html, body {
 .sub-btn:hover { color: var(--text); border-color: var(--muted); }
 .sub-btn.selected { border-color: var(--accent4); color: var(--accent4); background: rgba(255,159,67,0.07); }
 
-.input-mode-row { display: flex; gap: 6px; margin-bottom: 16px; }
+.input-mode-row { display: flex; gap: 6px; margin-bottom: 0; }
 .mode-btn {
   flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
   font-family: var(--sans); font-size: 0.75rem; font-weight: 700; padding: 10px;
@@ -235,7 +231,7 @@ html, body {
 .cta-panel {
   display: flex; flex-direction: column; justify-content: flex-start; gap: 14px;
   padding: 20px; background: var(--surface2); border: 1px solid var(--border);
-  align-self: start; width: 100%;
+  margin-top: 20px; max-width: 280px; width: 100%;
 }
 .cta-hint { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
 .start-btn {
@@ -403,7 +399,7 @@ html, body {
   .dash-today, .dash-kpis, .dash-breakdown, .dash-recent, .dash-training {
     grid-column: span 12;
   }
-  .training-top-row { grid-template-columns: 1fr; }
+
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
