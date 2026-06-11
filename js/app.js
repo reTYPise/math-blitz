@@ -1218,15 +1218,27 @@ function hideUserHeader() {
   document.getElementById('header-user').classList.add('hidden');
 }
 
-async function loginUser(rawLogin, writeCookie = true) {
+async function loginUser(rawLogin, rawPassword, writeCookie = true) {
   const login = Auth.normalizeLogin(rawLogin);
+  const password = rawPassword || '';
   if (!Auth.isValidLogin(login)) {
     Auth.showError('Логин: 2–24 символа — буквы, цифры, _ или -');
     return false;
   }
-  AppDB.setCurrentUser(login);
-  AppDB.ensureUser(login);
-  if (writeCookie) Auth.setLoginCookie(login);
+  if (!Auth.isValidPassword(password)) {
+    Auth.showError('Пароль: от 4 до 64 символов');
+    return false;
+  }
+  const passwordHash = await Auth.hashPassword(password);
+  const result = AppDB.loginWithPassword(login, passwordHash);
+  if (!result.ok) {
+    Auth.showError(result.error || 'Не удалось войти');
+    return false;
+  }
+  if (writeCookie) {
+    Auth.setLoginCookie(login);
+    Auth.setSessionCookie(result.token);
+  }
   Auth.hideLogin();
   updateUserHeader(login);
   updateFocusOptions();
@@ -1234,20 +1246,24 @@ async function loginUser(rawLogin, writeCookie = true) {
   return true;
 }
 
-function switchUser() {
-  Auth.clearLoginCookie();
-  AppDB.setCurrentUser(null);
+function logoutUser() {
+  AppDB.logout();
+  Auth.clearAllCookies();
   hideUserHeader();
-  document.getElementById('auth-login').value = '';
+  Auth.clearAuthForm();
   Auth.showLogin();
 }
 
 function bindAuthEvents() {
   document.getElementById('auth-form').addEventListener('submit', async e => {
     e.preventDefault();
-    await loginUser(document.getElementById('auth-login').value, true);
+    await loginUser(
+      document.getElementById('auth-login').value,
+      document.getElementById('auth-password').value,
+      true
+    );
   });
-  document.getElementById('user-switch-btn').addEventListener('click', switchUser);
+  document.getElementById('user-logout-btn').addEventListener('click', logoutUser);
 }
 
 bindEvents();
@@ -1263,10 +1279,20 @@ async function initApp() {
   }
   bindAuthEvents();
   const savedLogin = Auth.getLoginFromCookie();
-  if (savedLogin && Auth.isValidLogin(Auth.normalizeLogin(savedLogin))) {
-    await loginUser(savedLogin, false);
+  const savedToken = Auth.getSessionFromCookie();
+  if (
+    savedLogin &&
+    savedToken &&
+    Auth.isValidLogin(Auth.normalizeLogin(savedLogin)) &&
+    AppDB.restoreSession(Auth.normalizeLogin(savedLogin), savedToken)
+  ) {
+    Auth.hideLogin();
+    updateUserHeader(AppDB.getCurrentUser());
+    updateFocusOptions();
+    renderDashboard();
     return;
   }
+  Auth.clearAllCookies();
   Auth.showLogin();
 }
 

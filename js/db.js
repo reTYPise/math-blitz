@@ -74,9 +74,19 @@ const AppDB = (() => {
     db.run(`
       CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
-        created_at INTEGER NOT NULL
+        created_at INTEGER NOT NULL,
+        password_hash TEXT,
+        session_token TEXT
       )
     `);
+    if (!hasColumn('users', 'password_hash')) {
+      db.run(`ALTER TABLE users ADD COLUMN password_hash TEXT`);
+      persist();
+    }
+    if (!hasColumn('users', 'session_token')) {
+      db.run(`ALTER TABLE users ADD COLUMN session_token TEXT`);
+      persist();
+    }
     db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_username ON sessions(username)`);
     db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON sessions(username, date)`);
   }
@@ -116,12 +126,66 @@ const AppDB = (() => {
     if (!currentUser) throw new Error('User not logged in');
   }
 
-  function ensureUser(username) {
-    db.run(
-      `INSERT OR IGNORE INTO users (username, created_at) VALUES (?, ?)`,
-      [username, Date.now()]
-    );
+  function issueSession(username) {
+    const token = Auth.generateSessionToken();
+    db.run(`UPDATE users SET session_token = ? WHERE username = ?`, [token, username]);
     persist();
+    return token;
+  }
+
+  function loginWithPassword(username, passwordHash) {
+    const existing = queryOne(
+      `SELECT username, password_hash FROM users WHERE username = ?`,
+      [username]
+    );
+
+    if (!existing) {
+      const token = Auth.generateSessionToken();
+      db.run(
+        `INSERT INTO users (username, created_at, password_hash, session_token) VALUES (?, ?, ?, ?)`,
+        [username, Date.now(), passwordHash, token]
+      );
+      persist();
+      currentUser = username;
+      return { ok: true, token, isNew: true };
+    }
+
+    if (!existing.password_hash) {
+      const token = Auth.generateSessionToken();
+      db.run(
+        `UPDATE users SET password_hash = ?, session_token = ? WHERE username = ?`,
+        [passwordHash, token, username]
+      );
+      persist();
+      currentUser = username;
+      return { ok: true, token, isNew: false, migrated: true };
+    }
+
+    if (existing.password_hash !== passwordHash) {
+      return { ok: false, error: 'Неверный пароль' };
+    }
+
+    const token = issueSession(username);
+    currentUser = username;
+    return { ok: true, token, isNew: false };
+  }
+
+  function restoreSession(username, token) {
+    const row = queryOne(
+      `SELECT session_token FROM users WHERE username = ?`,
+      [username]
+    );
+    if (!row?.session_token || row.session_token !== token) return false;
+    currentUser = username;
+    return true;
+  }
+
+  function logout() {
+    if (currentUser) {
+      db.run(`UPDATE users SET session_token = NULL WHERE username = ?`, [currentUser]);
+      persist();
+    }
+    currentUser = null;
   }
 
   function assetPath(relativePath) {
@@ -297,7 +361,9 @@ const AppDB = (() => {
     formatDateKey,
     setCurrentUser,
     getCurrentUser,
-    ensureUser,
+    loginWithPassword,
+    restoreSession,
+    logout,
     recordSession,
     calculateDailyStreak,
     hasSessionToday,

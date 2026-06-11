@@ -58,12 +58,12 @@ html, body {
   font-family: var(--mono); font-size: 0.78rem; font-weight: 700; color: var(--accent);
   max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.user-switch-btn {
+.user-logout-btn {
   background: none; border: 1px solid var(--border); color: var(--muted);
   font-family: var(--mono); font-size: 0.62rem; font-weight: 700; padding: 5px 8px;
   cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s;
 }
-.user-switch-btn:hover { border-color: var(--accent); color: var(--accent); }
+.user-logout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 .header-cta {
   flex-shrink: 0; background: transparent; color: var(--accent);
   border: 1px solid var(--accent); font-family: var(--mono);

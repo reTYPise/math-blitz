@@ -26,7 +26,7 @@
 })();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-<link rel="stylesheet" href="css/styles.css?v=20260612">
+<link rel="stylesheet" href="css/styles.css?v=20260613">
 </head>
 <body>
 
@@ -35,16 +35,20 @@
 <div class="auth-overlay" id="auth-overlay">
   <div class="auth-panel" role="dialog" aria-labelledby="auth-title" aria-modal="true">
     <h2 class="auth-title" id="auth-title">math<span>-</span>blitz</h2>
-    <p class="auth-sub">Введите логин — ваша статистика сохранится отдельно</p>
+    <p class="auth-sub">Войдите или создайте аккаунт — статистика сохранится отдельно</p>
     <form class="auth-form" id="auth-form">
       <label class="auth-field" for="auth-login">
         <span>логин</span>
         <input id="auth-login" name="login" type="text" autocomplete="username" maxlength="24" placeholder="например, alex" required>
       </label>
+      <label class="auth-field" for="auth-password">
+        <span>пароль</span>
+        <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="4" maxlength="64" placeholder="минимум 4 символа" required>
+      </label>
       <button class="auth-submit" type="submit">Войти</button>
     </form>
     <p class="auth-error" id="auth-error" aria-live="polite"></p>
-    <p class="auth-hint">Пароль не нужен. Логин запоминается в cookie на этом устройстве.</p>
+    <p class="auth-hint">Новый логин создаёт аккаунт. Повторный логин требует тот же пароль. Сессия сохраняется в cookie.</p>
   </div>
 </div>
 
@@ -64,7 +68,7 @@
       <div class="header-user hidden" id="header-user">
         <span class="user-label">игрок</span>
         <span class="user-name" id="user-name"></span>
-        <button class="user-switch-btn" id="user-switch-btn" type="button">сменить</button>
+        <button class="user-logout-btn" id="user-logout-btn" type="button">выйти</button>
       </div>
       <button class="header-cta" id="quick-start-btn" type="button">Быстрый старт</button>
     </div>
@@ -336,8 +340,8 @@
 </div>
 
 <script src="js/vendor/sql-wasm.js"></script>
-<script src="js/db.js?v=20260612"></script>
-<script src="js/auth.js?v=20260612"></script>
-<script src="js/app.js?v=20260612"></script>
+<script src="js/db.js?v=20260613"></script>
+<script src="js/auth.js?v=20260613"></script>
+<script src="js/app.js?v=20260613"></script>
 </body>
 </html>
