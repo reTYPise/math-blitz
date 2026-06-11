@@ -1208,6 +1208,48 @@ function bindEvents() {
   });
 }
 
+// ── AUTH ──
+function updateUserHeader(login) {
+  document.getElementById('user-name').textContent = login;
+  document.getElementById('header-user').classList.remove('hidden');
+}
+
+function hideUserHeader() {
+  document.getElementById('header-user').classList.add('hidden');
+}
+
+async function loginUser(rawLogin, writeCookie = true) {
+  const login = Auth.normalizeLogin(rawLogin);
+  if (!Auth.isValidLogin(login)) {
+    Auth.showError('Логин: 2–24 символа — буквы, цифры, _ или -');
+    return false;
+  }
+  AppDB.setCurrentUser(login);
+  AppDB.ensureUser(login);
+  if (writeCookie) Auth.setLoginCookie(login);
+  Auth.hideLogin();
+  updateUserHeader(login);
+  updateFocusOptions();
+  renderDashboard();
+  return true;
+}
+
+function switchUser() {
+  Auth.clearLoginCookie();
+  AppDB.setCurrentUser(null);
+  hideUserHeader();
+  document.getElementById('auth-login').value = '';
+  Auth.showLogin();
+}
+
+function bindAuthEvents() {
+  document.getElementById('auth-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    await loginUser(document.getElementById('auth-login').value, true);
+  });
+  document.getElementById('user-switch-btn').addEventListener('click', switchUser);
+}
+
 bindEvents();
 
 async function initApp() {
@@ -1215,9 +1257,17 @@ async function initApp() {
     await AppDB.init();
   } catch (e) {
     console.error('SQLite init failed', e);
+    Auth.showError('Не удалось загрузить базу данных');
+    Auth.showLogin();
+    return;
   }
-  updateFocusOptions();
-  renderDashboard();
+  bindAuthEvents();
+  const savedLogin = Auth.getLoginFromCookie();
+  if (savedLogin && Auth.isValidLogin(Auth.normalizeLogin(savedLogin))) {
+    await loginUser(savedLogin, false);
+    return;
+  }
+  Auth.showLogin();
 }
 
 initApp();
