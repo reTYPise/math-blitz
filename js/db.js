@@ -3,6 +3,9 @@
 const AppDB = (() => {
   const DB_STORAGE_KEY = 'math-blitz-sqlite-v1';
   const LEGACY_JSON_KEYS = ['math-blitz-stats-v1', 'math-blitz-v1'];
+  const MAX_FAILED_ATTEMPTS = 5;
+  const LOCKOUT_BASE_MS = 15 * 60 * 1000;
+  const MAX_LOCKOUT_MS = 24 * 60 * 60 * 1000;
 
   let sqlModule = null;
   let db = null;
@@ -76,7 +79,9 @@ const AppDB = (() => {
         username TEXT PRIMARY KEY,
         created_at INTEGER NOT NULL,
         password_hash TEXT,
-        session_token TEXT
+        session_token TEXT,
+        failed_attempts INTEGER NOT NULL DEFAULT 0,
+        locked_until INTEGER NOT NULL DEFAULT 0
       )
     `);
     if (!hasColumn('users', 'password_hash')) {
@@ -85,6 +90,14 @@ const AppDB = (() => {
     }
     if (!hasColumn('users', 'session_token')) {
       db.run(`ALTER TABLE users ADD COLUMN session_token TEXT`);
+      persist();
+    }
+    if (!hasColumn('users', 'failed_attempts')) {
+      db.run(`ALTER TABLE users ADD COLUMN failed_attempts INTEGER NOT NULL DEFAULT 0`);
+      persist();
+    }
+    if (!hasColumn('users', 'locked_until')) {
+      db.run(`ALTER TABLE users ADD COLUMN locked_until INTEGER NOT NULL DEFAULT 0`);
       persist();
     }
     db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_username ON sessions(username)`);
@@ -133,49 +146,96 @@ const AppDB = (() => {
     return token;
   }
 
-  function loginWithPassword(username, passwordHash) {
+  function resetLoginSecurity(username) {
+    db.run(
+      `UPDATE users SET failed_attempts = 0, locked_until = 0 WHERE username = ?`,
+      [username]
+    );
+    persist();
+  }
+
+  function recordFailedLogin(username) {
+    const row = queryOne(
+      `SELECT failed_attempts FROM users WHERE username = ?`,
+      [username]
+    );
+    const attempts = (row?.failed_attempts || 0) + 1;
+    let lockedUntil = 0;
+    if (attempts >= MAX_FAILED_ATTEMPTS) {
+      const exponent = Math.min(attempts - MAX_FAILED_ATTEMPTS, 5);
+      const duration = Math.min(LOCKOUT_BASE_MS * Math.pow(2, exponent), MAX_LOCKOUT_MS);
+      lockedUntil = Date.now() + duration;
+    }
+    db.run(
+      `UPDATE users SET failed_attempts = ?, locked_until = ? WHERE username = ?`,
+      [attempts, lockedUntil, username]
+    );
+    persist();
+    return { attempts, lockedUntil };
+  }
+
+  async function loginWithPassword(username, password) {
+    const global = Auth.checkGlobalRateLimit();
+    if (global.blocked) {
+      return { ok: false, error: `Слишком много попыток. Подождите ${global.retryAfterSec} сек.` };
+    }
+    Auth.recordGlobalAttempt();
+
     const existing = queryOne(
-      `SELECT username, password_hash FROM users WHERE username = ?`,
+      `SELECT username, password_hash, failed_attempts, locked_until FROM users WHERE username = ?`,
       [username]
     );
 
+    if (existing) {
+      const lock = Auth.getLockoutStatus(existing.locked_until);
+      if (lock.locked) {
+        return { ok: false, error: `Аккаунт временно заблокирован. Подождите ${lock.minutes} мин.` };
+      }
+    }
+
     if (!existing) {
+      const hash = await Auth.hashPasswordForStorage(password);
       const token = Auth.generateSessionToken();
       db.run(
-        `INSERT INTO users (username, created_at, password_hash, session_token) VALUES (?, ?, ?, ?)`,
-        [username, Date.now(), passwordHash, token]
+        `INSERT INTO users (username, created_at, password_hash, session_token, failed_attempts, locked_until)
+         VALUES (?, ?, ?, ?, 0, 0)`,
+        [username, Date.now(), hash, token]
       );
       persist();
       currentUser = username;
       return { ok: true, token, isNew: true };
     }
 
-    if (!existing.password_hash) {
-      const token = Auth.generateSessionToken();
-      db.run(
-        `UPDATE users SET password_hash = ?, session_token = ? WHERE username = ?`,
-        [passwordHash, token, username]
-      );
-      persist();
-      currentUser = username;
-      return { ok: true, token, isNew: false, migrated: true };
-    }
-
-    if (existing.password_hash !== passwordHash) {
+    const verified = await Auth.verifyPassword(password, existing.password_hash);
+    if (!verified.ok) {
+      if (existing.password_hash) {
+        const fail = recordFailedLogin(username);
+        await Auth.enforceLoginDelay(fail.attempts);
+        const lock = Auth.getLockoutStatus(fail.lockedUntil);
+        if (lock.locked) {
+          return { ok: false, error: `Слишком много попыток. Аккаунт заблокирован на ${lock.minutes} мин.` };
+        }
+      }
       return { ok: false, error: 'Неверный пароль' };
     }
 
     const token = issueSession(username);
+    if (verified.hash) {
+      db.run(`UPDATE users SET password_hash = ? WHERE username = ?`, [verified.hash, username]);
+      persist();
+    }
+    resetLoginSecurity(username);
     currentUser = username;
-    return { ok: true, token, isNew: false };
+    return { ok: true, token, isNew: false, migrated: !!verified.needsSet };
   }
 
   function restoreSession(username, token) {
+    if (!Auth.canRestoreSession(username, token)) return false;
     const row = queryOne(
       `SELECT session_token FROM users WHERE username = ?`,
       [username]
     );
-    if (!row?.session_token || row.session_token !== token) return false;
+    if (!row?.session_token || !Auth.timingSafeEqual(row.session_token, token)) return false;
     currentUser = username;
     return true;
   }

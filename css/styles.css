@@ -107,6 +107,8 @@ html, body {
   cursor: pointer; letter-spacing: 2px; text-transform: uppercase; transition: all 0.15s;
 }
 .auth-submit:hover { background: #fff; }
+.auth-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+.auth-submit:disabled:hover { background: var(--accent); }
 .auth-error {
   min-height: 1.2em; margin-top: 10px; font-family: var(--mono); font-size: 0.72rem; color: var(--accent2);
 }
