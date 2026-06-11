@@ -158,14 +158,16 @@ html, body {
 .recent-empty { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); padding: 12px 0; }
 
 /* ── TRAINING PANEL ── */
-.training-layout { min-width: 0; }
-.training-main { min-width: 0; }
+.training-layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px; align-items: stretch;
+}
+.training-main { min-width: 0; width: 100%; }
 .section-label {
   font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
   color: var(--muted); margin-bottom: 8px; margin-top: 4px;
 }
 
-.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
 .op-btn {
   background: var(--surface2); border: 1px solid var(--border); color: var(--text);
   font-family: var(--sans); font-size: 1rem; font-weight: 700; padding: 13px;
@@ -231,7 +233,7 @@ html, body {
 .cta-panel {
   display: flex; flex-direction: column; justify-content: flex-start; gap: 14px;
   padding: 20px; background: var(--surface2); border: 1px solid var(--border);
-  margin-top: 20px; max-width: 280px; width: 100%;
+  align-self: end; width: 100%;
 }
 .cta-hint { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
 .start-btn {
@@ -399,7 +401,8 @@ html, body {
   .dash-today, .dash-kpis, .dash-breakdown, .dash-recent, .dash-training {
     grid-column: span 12;
   }
-
+  .training-layout { grid-template-columns: 1fr; }
+  .cta-panel { align-self: stretch; margin-top: 20px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
