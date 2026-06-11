@@ -158,10 +158,12 @@ html, body {
 .recent-empty { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); padding: 12px 0; }
 
 /* ── TRAINING PANEL ── */
-.training-layout {
-  display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start;
-}
+.training-layout { min-width: 0; }
 .training-main { min-width: 0; }
+.training-top-row {
+  display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start;
+  margin-bottom: 0;
+}
 .section-label {
   font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
   color: var(--muted); margin-bottom: 8px; margin-top: 4px;
@@ -401,7 +403,7 @@ html, body {
   .dash-today, .dash-kpis, .dash-breakdown, .dash-recent, .dash-training {
     grid-column: span 12;
   }
-  .training-layout { grid-template-columns: 1fr; }
+  .training-top-row { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
