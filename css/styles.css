@@ -159,7 +159,7 @@ html, body {
 
 /* ── TRAINING PANEL ── */
 .training-layout {
-  display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: stretch;
+  display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start;
 }
 .training-main { min-width: 0; }
 .section-label {
@@ -242,9 +242,9 @@ html, body {
 }
 
 .cta-panel {
-  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 14px;
   padding: 20px; background: var(--surface2); border: 1px solid var(--border);
-  min-height: 100%;
+  align-self: start; width: 100%;
 }
 .cta-hint { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
 .start-btn {
@@ -413,7 +413,6 @@ html, body {
     grid-column: span 12;
   }
   .training-layout { grid-template-columns: 1fr; }
-  .cta-panel { min-height: auto; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
