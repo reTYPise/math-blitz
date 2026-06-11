@@ -26,7 +26,7 @@
 })();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=20260611">
 </head>
 <body>
 
@@ -102,105 +102,113 @@
         <div class="training-layout">
           <div class="training-main">
 
-            <div class="section-label">операция</div>
-            <div class="menu-grid">
-              <button class="op-btn selected" data-op="×" type="button"><span class="op-symbol">×</span>умножение</button>
-              <button class="op-btn" data-op="÷" type="button"><span class="op-symbol">÷</span>деление</button>
-              <button class="op-btn" data-op="+" type="button"><span class="op-symbol">+</span>сложение</button>
-              <button class="op-btn" data-op="−" type="button"><span class="op-symbol">−</span>вычитание</button>
-              <button class="op-btn" data-op="%" type="button"><span class="op-symbol">%</span>проценты</button>
-            </div>
-
-            <div class="section-label">числа и подсказка</div>
-            <div class="settings-row">
-              <label class="select-field">
-                <span>диапазон</span>
-                <select id="range-select">
-                  <option value="10" selected>1–10</option>
-                  <option value="12">1–12</option>
-                  <option value="20">1–20</option>
-                  <option value="25">1–25</option>
-                  <option value="50">1–50</option>
-                  <option value="100">1–100</option>
-                </select>
-              </label>
-              <label class="select-field">
-                <span>тренировать</span>
-                <select id="focus-select"></select>
-              </label>
-            </div>
-
-            <div class="toggle-stack">
-              <div class="toggle-row">
-                <label for="guide-toggle">
-                  <input id="guide-toggle" type="checkbox" checked>
-                  показывать готовые ответы
-                </label>
-                <div class="toggle-hint">справа в игре</div>
+            <div class="training-section training-section-full">
+              <div class="section-label">операция</div>
+              <div class="menu-grid">
+                <button class="op-btn selected" data-op="×" type="button"><span class="op-symbol">×</span>умножение</button>
+                <button class="op-btn" data-op="÷" type="button"><span class="op-symbol">÷</span>деление</button>
+                <button class="op-btn" data-op="+" type="button"><span class="op-symbol">+</span>сложение</button>
+                <button class="op-btn" data-op="−" type="button"><span class="op-symbol">−</span>вычитание</button>
+                <button class="op-btn" data-op="%" type="button"><span class="op-symbol">%</span>проценты</button>
               </div>
             </div>
 
-            <div class="settings-row settings-row-single">
-              <label class="select-field">
-                <span>порядок вопросов</span>
-                <select id="sequence-mode-select">
-                  <option value="random" selected>всегда случайно</option>
-                  <option value="ordered-first">сначала по порядку, потом случайно</option>
-                  <option value="ordered">всегда по порядку</option>
-                </select>
-              </label>
-            </div>
+            <div class="training-body">
+              <div class="training-col">
+                <div class="section-label">числа и подсказка</div>
+                <div class="settings-row">
+                  <label class="select-field">
+                    <span>диапазон</span>
+                    <select id="range-select">
+                      <option value="10" selected>1–10</option>
+                      <option value="12">1–12</option>
+                      <option value="20">1–20</option>
+                      <option value="25">1–25</option>
+                      <option value="50">1–50</option>
+                      <option value="100">1–100</option>
+                    </select>
+                  </label>
+                  <label class="select-field">
+                    <span>тренировать</span>
+                    <select id="focus-select"></select>
+                  </label>
+                </div>
 
-            <div class="section-label">режим игры</div>
-            <div class="game-mode-grid game-mode-grid-wide">
-              <button class="gm-btn selected" data-gm="classic" type="button">
-                <span class="gm-icon">📋</span>классика<span class="gm-sub">N вопросов</span>
-              </button>
-              <button class="gm-btn" data-gm="timed" type="button">
-                <span class="gm-icon">⏱</span>на время<span class="gm-sub">успей за T сек</span>
-              </button>
-              <button class="gm-btn" data-gm="survival" type="button">
-                <span class="gm-icon">∞</span>выживание<span class="gm-sub">максимум за T</span>
-              </button>
-            </div>
+                <div class="toggle-stack">
+                  <div class="toggle-row">
+                    <label for="guide-toggle">
+                      <input id="guide-toggle" type="checkbox" checked>
+                      показывать готовые ответы
+                    </label>
+                    <div class="toggle-hint">справа в игре</div>
+                  </div>
+                </div>
 
-            <div class="mode-options" id="opts-classic">
-              <div class="section-label">количество вопросов</div>
-              <div class="sub-grid" data-sub-mode="classic">
-                <button class="sub-btn" data-val="10" type="button">10</button>
-                <button class="sub-btn selected" data-val="20" type="button">20</button>
-                <button class="sub-btn" data-val="30" type="button">30</button>
-                <button class="sub-btn" data-val="50" type="button">50</button>
-                <button class="sub-btn" data-val="100" type="button">100</button>
+                <div class="settings-row settings-row-single">
+                  <label class="select-field">
+                    <span>порядок вопросов</span>
+                    <select id="sequence-mode-select">
+                      <option value="random" selected>всегда случайно</option>
+                      <option value="ordered-first">сначала по порядку, потом случайно</option>
+                      <option value="ordered">всегда по порядку</option>
+                    </select>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div class="mode-options" id="opts-timed" style="display:none">
-              <div class="section-label">время на сессию</div>
-              <div class="sub-grid" data-sub-mode="timed">
-                <button class="sub-btn" data-val="30" type="button">30 сек</button>
-                <button class="sub-btn selected" data-val="60" type="button">1 мин</button>
-                <button class="sub-btn" data-val="120" type="button">2 мин</button>
-                <button class="sub-btn" data-val="180" type="button">3 мин</button>
-                <button class="sub-btn" data-val="300" type="button">5 мин</button>
+              <div class="training-col">
+                <div class="section-label">режим игры</div>
+                <div class="game-mode-grid game-mode-grid-wide">
+                  <button class="gm-btn selected" data-gm="classic" type="button">
+                    <span class="gm-icon">📋</span>классика<span class="gm-sub">N вопросов</span>
+                  </button>
+                  <button class="gm-btn" data-gm="timed" type="button">
+                    <span class="gm-icon">⏱</span>на время<span class="gm-sub">успей за T сек</span>
+                  </button>
+                  <button class="gm-btn" data-gm="survival" type="button">
+                    <span class="gm-icon">∞</span>выживание<span class="gm-sub">максимум за T</span>
+                  </button>
+                </div>
+
+                <div class="mode-options" id="opts-classic">
+                  <div class="section-label">количество вопросов</div>
+                  <div class="sub-grid" data-sub-mode="classic">
+                    <button class="sub-btn" data-val="10" type="button">10</button>
+                    <button class="sub-btn selected" data-val="20" type="button">20</button>
+                    <button class="sub-btn" data-val="30" type="button">30</button>
+                    <button class="sub-btn" data-val="50" type="button">50</button>
+                    <button class="sub-btn" data-val="100" type="button">100</button>
+                  </div>
+                </div>
+
+                <div class="mode-options" id="opts-timed" style="display:none">
+                  <div class="section-label">время на сессию</div>
+                  <div class="sub-grid" data-sub-mode="timed">
+                    <button class="sub-btn" data-val="30" type="button">30 сек</button>
+                    <button class="sub-btn selected" data-val="60" type="button">1 мин</button>
+                    <button class="sub-btn" data-val="120" type="button">2 мин</button>
+                    <button class="sub-btn" data-val="180" type="button">3 мин</button>
+                    <button class="sub-btn" data-val="300" type="button">5 мин</button>
+                  </div>
+                </div>
+
+                <div class="mode-options" id="opts-survival" style="display:none">
+                  <div class="section-label">лимит времени</div>
+                  <div class="sub-grid sub-grid-4" data-sub-mode="survival">
+                    <button class="sub-btn" data-val="60" type="button">1 мин</button>
+                    <button class="sub-btn selected" data-val="120" type="button">2 мин</button>
+                    <button class="sub-btn" data-val="180" type="button">3 мин</button>
+                    <button class="sub-btn" data-val="300" type="button">5 мин</button>
+                  </div>
+                </div>
+
+                <div class="section-label">ввод ответа</div>
+                <div class="input-mode-row">
+                  <button class="mode-btn" data-mode="keyboard" type="button">⌨ клавиатура</button>
+                  <button class="mode-btn selected" data-mode="choices" type="button">☰ варианты</button>
+                  <button class="mode-btn" data-mode="screen" type="button">📱 экран</button>
+                </div>
               </div>
-            </div>
-
-            <div class="mode-options" id="opts-survival" style="display:none">
-              <div class="section-label">лимит времени</div>
-              <div class="sub-grid" data-sub-mode="survival">
-                <button class="sub-btn" data-val="60" type="button">1 мин</button>
-                <button class="sub-btn selected" data-val="120" type="button">2 мин</button>
-                <button class="sub-btn" data-val="180" type="button">3 мин</button>
-                <button class="sub-btn" data-val="300" type="button">5 мин</button>
-              </div>
-            </div>
-
-            <div class="section-label">ввод ответа</div>
-            <div class="input-mode-row">
-              <button class="mode-btn" data-mode="keyboard" type="button">⌨ клавиатура</button>
-              <button class="mode-btn selected" data-mode="choices" type="button">☰ варианты</button>
-              <button class="mode-btn" data-mode="screen" type="button">📱 экран</button>
             </div>
 
             <div class="cta-panel">
