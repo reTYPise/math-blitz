@@ -163,7 +163,9 @@ function trainerKey() {
 
 function formatTrainerLabel(trainer) {
   if (!trainer) return '—';
-  return trainer.split('+').map(op => OP_LABELS[op] || op).join(' · ');
+  const ops = trainer.match(/[×÷+−]/g) || [];
+  if (ops.length === 0) return trainer;
+  return ops.map(op => OP_LABELS[op] || op).join(' · ');
 }
 
 function getSettingsPreviewHtml() {
