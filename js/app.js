@@ -6,9 +6,10 @@ const MONTHS_GEN = [
 ];
 const WEEKDAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
 const WEEK_SHORT = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
-const OP_LABELS = { '×': 'умножение', '÷': 'деление', '+': 'сложение', '−': 'вычитание' };
+const OP_LABELS = { '×': 'умножение', '÷': 'деление', '+': 'сложение', '−': 'вычитание', '%': 'проценты' };
 const GAME_MODE_LABELS = { classic: 'классика', timed: 'на время', survival: 'выживание' };
-const ALL_OPS = ['×', '÷', '+', '−'];
+const ALL_OPS = ['×', '÷', '+', '−', '%'];
+const PERCENTS_FULL = [1, 2, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100];
 
 // ── SETTINGS ──
 let selectedOps       = ['×'];
@@ -163,9 +164,68 @@ function trainerKey() {
 
 function formatTrainerLabel(trainer) {
   if (!trainer) return '—';
-  const ops = trainer.match(/[×÷+−]/g) || [];
+  const ops = trainer.match(/[×÷+−%]/g) || [];
   if (ops.length === 0) return trainer;
   return ops.map(op => OP_LABELS[op] || op).join(' · ');
+}
+
+function getPercentsForRange(range) {
+  let pool;
+  if (range <= 10) pool = [5, 10, 20, 25, 50, 100];
+  else if (range <= 20) pool = [1, 2, 5, 10, 15, 20, 25, 50, 100];
+  else pool = PERCENTS_FULL;
+  return pool.filter(pct => {
+    for (let b = 1; b <= range; b++) {
+      if (isCleanPercent(pct, b)) return true;
+    }
+    return false;
+  });
+}
+
+function percentAnswer(pct, base) {
+  return (pct * base) / 100;
+}
+
+function isCleanPercent(pct, base) {
+  return (pct * base) % 100 === 0;
+}
+
+function formatPercentQuestion(pct, base) {
+  return `${pct}% от ${base}`;
+}
+
+function makePercentQuestion(pct, base) {
+  const answer = percentAnswer(pct, base);
+  return { text: formatPercentQuestion(pct, base), op: '%', a: pct, b: base, answer };
+}
+
+function pickBaseForPercent(pct, maxBase, fixed) {
+  if (fixed) return fixed;
+  const valid = [];
+  for (let b = 1; b <= maxBase; b++) {
+    if (isCleanPercent(pct, b)) valid.push(b);
+  }
+  return valid.length ? pickRandom(valid) : null;
+}
+
+function generatePercentQuestion() {
+  const percents = getPercentsForRange(selectedRange);
+  const fixed = selectedFocus === 'any' ? null : parseInt(selectedFocus);
+  if (percents.length === 0) return makePercentQuestion(100, Math.max(1, selectedRange));
+
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const pct = pickRandom(percents);
+    if (fixed) {
+      if (isCleanPercent(pct, fixed)) return makePercentQuestion(pct, fixed);
+      continue;
+    }
+    const base = pickBaseForPercent(pct, selectedRange, null);
+    if (base !== null) return makePercentQuestion(pct, base);
+  }
+
+  const pct = percents[0];
+  const base = fixed || pickBaseForPercent(pct, selectedRange, null) || 1;
+  return makePercentQuestion(pct, base);
 }
 
 function getSettingsPreviewHtml() {
@@ -464,6 +524,7 @@ function quickStart() {
 // ── QUESTION GEN ──
 function generateQuestion() {
   const op = selectedOps[Math.floor(Math.random() * selectedOps.length)];
+  if (op === '%') return generatePercentQuestion();
   const { a, b, answer } = getOperandPair(op);
   return { text: `${a} ${op} ${b}`, op, a, b, answer };
 }
@@ -503,6 +564,22 @@ function getNextQuestion() {
 function buildOrderedQueue() {
   const queue = [];
   selectedOps.forEach(op => {
+    if (op === '%') {
+      const percents = getPercentsForRange(selectedRange);
+      if (selectedFocus === 'any') {
+        for (let base = 1; base <= selectedRange; base++) {
+          for (const pct of percents) {
+            if (isCleanPercent(pct, base)) queue.push(makePercentQuestion(pct, base));
+          }
+        }
+      } else {
+        const base = parseInt(selectedFocus);
+        for (const pct of percents) {
+          if (isCleanPercent(pct, base)) queue.push(makePercentQuestion(pct, base));
+        }
+      }
+      return;
+    }
     const fixed = selectedFocus === 'any' ? 1 : parseInt(selectedFocus);
     for (let n = 1; n <= selectedRange; n++) {
       const pair = getOrderedOperandPair(op, fixed, n);
@@ -632,6 +709,16 @@ function buildGuideRows() {
   const limit = 420;
 
   for (const op of selectedOps) {
+    if (op === '%') {
+      const base = parseInt(selectedFocus);
+      const percents = getPercentsForRange(selectedRange);
+      for (const pct of percents) {
+        if (!isCleanPercent(pct, base)) continue;
+        items.push(formatPercentGuideRow(pct, base));
+        if (items.length >= limit) return { title: `проценты от ${selectedFocus}`, items, limited: true };
+      }
+      continue;
+    }
     const fixed = parseInt(selectedFocus);
     for (let n = 1; n <= selectedRange; n++) {
       items.push(formatFixedGuideRow(op, fixed, n));
@@ -639,11 +726,24 @@ function buildGuideRows() {
     }
   }
 
-  return { title: `только на ${selectedFocus}`, items, limited: false };
+  const hasPercent = selectedOps.includes('%');
+  const title = hasPercent && selectedOps.length === 1
+    ? `проценты от ${selectedFocus}`
+    : `только на ${selectedFocus}`;
+  return { title, items, limited: false };
 }
 
 function buildContextGuideRows() {
   if (!currentQuestion) return { title: `таблица 1–${selectedRange}`, items: [], limited: false };
+
+  if (currentQuestion.op === '%') {
+    const base = currentQuestion.b;
+    const percents = getPercentsForRange(selectedRange);
+    const items = percents
+      .filter(pct => isCleanPercent(pct, base))
+      .map(pct => formatPercentGuideRow(pct, base));
+    return { title: `проценты от ${base}`, items, limited: false };
+  }
 
   const anchor = getGuideAnchor(currentQuestion);
   const items = [];
@@ -656,7 +756,12 @@ function buildContextGuideRows() {
 
 function getGuideAnchor(question) {
   if (question.op === '×') return question.a;
+  if (question.op === '%') return question.b;
   return question.b;
+}
+
+function formatPercentGuideRow(pct, base) {
+  return { left: formatPercentQuestion(pct, base), answer: percentAnswer(pct, base) };
 }
 
 function formatFixedGuideRow(op, fixed, n) {
