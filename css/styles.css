@@ -158,16 +158,14 @@ html, body {
 .recent-empty { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); padding: 12px 0; }
 
 /* ── TRAINING PANEL ── */
-.training-layout {
-  display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px; align-items: stretch;
-}
+.training-layout { width: 100%; }
 .training-main { min-width: 0; width: 100%; }
 .section-label {
   font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
   color: var(--muted); margin-bottom: 8px; margin-top: 4px;
 }
 
-.menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
 .op-btn {
   background: var(--surface2); border: 1px solid var(--border); color: var(--text);
   font-family: var(--sans); font-size: 1rem; font-weight: 700; padding: 13px;
@@ -230,14 +228,9 @@ html, body {
 .mode-btn:hover { color: var(--text); }
 .mode-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
 
-.cta-panel {
-  display: flex; flex-direction: column; justify-content: flex-start; gap: 14px;
-  padding: 20px; background: var(--surface2); border: 1px solid var(--border);
-  align-self: end; width: 100%;
-}
-.cta-hint { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+.cta-panel { margin-top: 20px; width: 100%; }
 .start-btn {
-  width: 100%; background: var(--accent); color: #000; border: none;
+  display: block; width: 100%; background: var(--accent); color: #000; border: none;
   font-family: var(--mono); font-size: 1.05rem; font-weight: 700;
   padding: 18px 24px; cursor: pointer; letter-spacing: 2px;
   transition: all 0.15s; text-transform: uppercase;
@@ -401,8 +394,6 @@ html, body {
   .dash-today, .dash-kpis, .dash-breakdown, .dash-recent, .dash-training {
     grid-column: span 12;
   }
-  .training-layout { grid-template-columns: 1fr; }
-  .cta-panel { align-self: stretch; margin-top: 20px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -426,6 +417,14 @@ html, body {
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .recent-row { grid-template-columns: 1fr; gap: 4px; }
   .guide-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .menu-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 540px) {
+  .menu-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 420px) {
