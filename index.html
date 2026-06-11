@@ -10,285 +10,23 @@
 <meta property="og:description" content="Онлайн-тренажер для быстрой практики таблицы умножения, деления, сложения и вычитания с режимами порядка, случайных вопросов и подсказками.">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://retypise.github.io/math-blitz/">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 <title>Тренажер устного счета math-blitz — таблица умножения онлайн</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --border: #1e1e2e;
-    --accent: #e8ff47;
-    --accent2: #ff4757;
-    --accent3: #2ed573;
-    --accent4: #ff9f43;
-    --text: #f0f0f5;
-    --muted: #555568;
-    --mono: 'Space Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
-
-  .screen { display: none; width: 100%; height: 100vh; overflow-y: auto; }
-  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
-
-  /* ── MENU ── */
-  #screen-menu { padding: 24px 20px 40px; gap: 0; }
-
-  .logo { font-family: var(--mono); font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 700; letter-spacing: -2px; color: var(--accent); margin-bottom: 4px; }
-  .logo span { color: var(--muted); }
-  .tagline { font-size: 0.7rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 24px; }
-
-  .section-label { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); width: 100%; max-width: 500px; margin-bottom: 8px; }
-
-  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 18px; }
-  .op-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: var(--sans); font-size: 1rem; font-weight: 700; padding: 13px;
-    cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
-  }
-  .op-btn::after { content: ''; position: absolute; inset: 0; background: var(--accent); opacity: 0; transition: opacity 0.15s; }
-  .op-btn:hover::after { opacity: 0.07; }
-  .op-btn.selected { border-color: var(--accent); color: var(--accent); }
-  .op-btn.selected::after { opacity: 0.1; }
-  .op-symbol { display: block; font-family: var(--mono); font-size: 1.3rem; margin-bottom: 2px; }
-
-  .range-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 500px; margin-bottom: 18px; }
-  .range-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-    font-family: var(--mono); font-size: 0.8rem; padding: 9px 6px; cursor: pointer; transition: all 0.15s;
-  }
-  .range-btn:hover { color: var(--text); border-color: var(--muted); }
-  .range-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
-
-  .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 12px; }
-  .select-field { display: flex; flex-direction: column; gap: 6px; }
-  .select-field span {
-    font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
-  }
-  .select-field select {
-    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: var(--mono); font-size: 0.82rem; padding: 11px 10px; cursor: pointer; outline: none;
-  }
-  .select-field select:focus { border-color: var(--accent); }
-  .toggle-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    width: 100%; max-width: 500px; margin-bottom: 18px; padding: 10px 12px;
-    background: var(--surface); border: 1px solid var(--border);
-  }
-  .toggle-row label { display: flex; align-items: center; gap: 9px; cursor: pointer; color: var(--text); font-size: 0.78rem; font-weight: 700; }
-  .toggle-row input { width: 16px; height: 16px; accent-color: var(--accent); }
-  .toggle-hint { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); white-space: nowrap; }
-  .toggle-stack { display: grid; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 18px; }
-  .toggle-stack .toggle-row { margin-bottom: 0; }
-  .seo-description {
-    width: 100%; max-width: 500px; margin-top: 18px; color: var(--muted);
-    font-size: 0.78rem; line-height: 1.65;
-  }
-
-  /* GAME MODE */
-  .game-mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 500px; margin-bottom: 14px; }
-  .gm-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-    font-family: var(--sans); font-size: 0.75rem; font-weight: 700; padding: 12px 6px;
-    cursor: pointer; transition: all 0.15s; text-align: center; line-height: 1.4;
-  }
-  .gm-btn:hover { color: var(--text); border-color: var(--muted); }
-  .gm-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
-  .gm-icon { font-size: 1.1rem; display: block; margin-bottom: 4px; }
-  .gm-sub { display: block; font-size: 0.6rem; color: var(--muted); margin-top: 3px; font-family: var(--mono); }
-  .gm-btn.selected .gm-sub { color: rgba(232,255,71,0.55); }
-
-  .mode-options { width: 100%; max-width: 500px; margin-bottom: 16px; }
-  .sub-grid { display: flex; gap: 6px; flex-wrap: wrap; }
-  .sub-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-    font-family: var(--mono); font-size: 0.78rem; padding: 7px 13px; cursor: pointer; transition: all 0.15s;
-  }
-  .sub-btn:hover { color: var(--text); border-color: var(--muted); }
-  .sub-btn.selected { border-color: var(--accent4); color: var(--accent4); background: rgba(255,159,67,0.07); }
-
-  .input-mode-row { display: flex; gap: 6px; width: 100%; max-width: 500px; margin-bottom: 20px; }
-  .mode-btn {
-    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--muted);
-    font-family: var(--sans); font-size: 0.75rem; font-weight: 700; padding: 10px;
-    cursor: pointer; transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase;
-  }
-  .mode-btn:hover { color: var(--text); }
-  .mode-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
-
-  .start-btn {
-    background: var(--accent); color: #000; border: none; font-family: var(--mono);
-    font-size: 1rem; font-weight: 700; padding: 15px 60px; cursor: pointer;
-    letter-spacing: 2px; transition: all 0.15s; width: 100%; max-width: 500px;
-  }
-  .start-btn:hover { background: #fff; }
-  .start-btn:active { transform: scale(0.98); }
-
-  /* ── GAME ── */
-  #screen-game { padding: 14px 20px 16px; gap: 0; justify-content: flex-start; }
-
-  .game-shell {
-    width: 100%; max-width: 1040px; min-height: calc(100vh - 30px);
-    display: grid; grid-template-columns: minmax(0, 520px) minmax(260px, 1fr);
-    gap: 16px; align-items: start;
-  }
-  .game-main { width: 100%; min-width: 0; }
-
-  .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px; }
-  .streak { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
-  .streak span { color: var(--accent); }
-  .quit-btn {
-    background: none; border: 1px solid var(--border); color: var(--muted);
-    font-family: var(--mono); font-size: 0.7rem; padding: 5px 12px; cursor: pointer; transition: all 0.15s;
-  }
-  .quit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-
-  /* TIMER ROW */
-  .timer-row { width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-  .timer-display {
-    font-family: var(--mono); font-size: 1.5rem; font-weight: 700; min-width: 54px;
-    color: var(--accent); transition: color 0.3s;
-  }
-  .timer-display.warn { color: var(--accent4); }
-  .timer-display.critical { color: var(--accent2); animation: pulse-t 0.5s ease infinite alternate; }
-  @keyframes pulse-t { from { opacity: 1; } to { opacity: 0.35; } }
-
-  .timer-bar-wrap { flex: 1; height: 6px; background: var(--border); overflow: hidden; }
-  .timer-bar-fill { height: 100%; background: var(--accent); transition: width 0.22s linear, background 0.3s; }
-  .timer-bar-fill.warn { background: var(--accent4); }
-  .timer-bar-fill.critical { background: var(--accent2); }
-
-  .qcount-display { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); min-width: 44px; text-align: right; }
-
-  .progress-bar { width: 100%; height: 3px; background: var(--border); margin-bottom: 10px; }
-  .progress-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; }
-
-  .question-box {
-    width: 100%; background: var(--surface); border: 1px solid var(--border);
-    padding: 26px 22px; text-align: center; margin-bottom: 12px;
-    position: relative; overflow: hidden; transition: border-color 0.2s;
-  }
-  .question-box.correct { border-color: var(--accent3); }
-  .question-box.wrong { border-color: var(--accent2); }
-  .question-text { font-family: var(--mono); font-size: clamp(2rem, 7vw, 4rem); font-weight: 700; letter-spacing: -2px; line-height: 1; }
-  .question-answer { font-family: var(--mono); font-size: clamp(1rem, 3.5vw, 1.6rem); color: var(--muted); margin-top: 8px; min-height: 1.7rem; transition: color 0.2s; }
-  .question-answer.show-wrong { color: var(--accent2); }
-  .question-answer.show-correct { color: var(--accent3); }
-
-  .typed-input-display { font-family: var(--mono); font-size: clamp(1.5rem, 5vw, 2.8rem); font-weight: 700; color: var(--accent); letter-spacing: 4px; min-height: 2.4rem; }
-  .typed-cursor { display: inline-block; width: 3px; height: 1em; background: var(--accent); vertical-align: middle; margin-left: 2px; animation: blink 1s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .keyboard-hint { font-size: 0.62rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: -6px; margin-bottom: 10px; }
-
-  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-  .choice-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: var(--mono); font-size: clamp(1.1rem, 3.5vw, 1.6rem); font-weight: 700;
-    padding: 17px; cursor: pointer; transition: all 0.12s;
-  }
-  .choice-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  .choice-btn:disabled { cursor: default; }
-  .choice-btn.correct-choice { border-color: var(--accent3) !important; color: var(--accent3) !important; background: rgba(46,213,115,0.08); }
-  .choice-btn.wrong-choice { border-color: var(--accent2) !important; color: var(--accent2) !important; background: rgba(255,71,87,0.08); }
-
-  .screen-keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px; }
-  .sk-row { display: flex; gap: 6px; justify-content: center; }
-  .sk-btn {
-    flex: 1; max-width: 88px; background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); font-family: var(--mono); font-size: 1.1rem; font-weight: 700;
-    padding: 13px 10px; cursor: pointer; transition: all 0.1s; user-select: none; -webkit-tap-highlight-color: transparent;
-  }
-  .sk-btn:active { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); transform: scale(0.95); }
-  .sk-btn.sk-enter { background: var(--accent); color: #000; border-color: var(--accent); font-size: 0.85rem; letter-spacing: 1px; }
-  .sk-btn.sk-enter:active { background: #fff; }
-
-  .practice-guide {
-    display: none; width: 100%; max-height: calc(100vh - 30px); overflow: auto;
-    background: var(--surface); border: 1px solid var(--border); padding: 14px;
-  }
-  .practice-guide.show { display: block; }
-  .guide-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-  .guide-copy { min-width: 0; }
-  .guide-title { font-family: var(--mono); font-size: 0.9rem; color: var(--accent); font-weight: 700; }
-  .guide-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-top: 3px; }
-  .guide-reveal-btn {
-    flex: 0 0 auto; background: none; border: 1px solid var(--border); color: var(--muted);
-    font-family: var(--mono); font-size: 0.68rem; padding: 7px 10px; cursor: pointer;
-    text-transform: uppercase; letter-spacing: 1px; transition: all 0.15s;
-  }
-  .guide-reveal-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .guide-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 6px; }
-  .practice-guide.collapsed .guide-list { display: none; }
-  .guide-row {
-    border: 1px solid var(--border); padding: 8px 9px; font-family: var(--mono);
-    font-size: 0.82rem; color: var(--text); background: rgba(255,255,255,0.015);
-  }
-  .guide-row span { color: var(--accent); }
-  .guide-row.current {
-    border-color: var(--accent); background: rgba(232,255,71,0.11); color: #fff;
-    box-shadow: inset 3px 0 0 var(--accent);
-  }
-  .guide-row.current span { color: #fff; }
-
-  @media (max-width: 760px) {
-    html, body { overflow: auto; }
-    .screen { min-height: 100vh; height: auto; }
-    .settings-row { grid-template-columns: 1fr; }
-    .toggle-row { align-items: flex-start; flex-direction: column; gap: 6px; }
-    .toggle-hint { white-space: normal; }
-    .game-shell { min-height: auto; grid-template-columns: 1fr; gap: 12px; }
-    .practice-guide { max-height: none; }
-    .guide-list { grid-template-columns: 1fr 1fr; }
-  }
-
-  @media (max-width: 420px) {
-    #screen-menu, #screen-game { padding-left: 14px; padding-right: 14px; }
-    .game-mode-grid, .input-mode-row { grid-template-columns: 1fr; flex-direction: column; }
-    .guide-list { grid-template-columns: 1fr; }
-  }
-
-  /* TIMES UP */
-  .timesup-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(10,10,15,0.93);
-    z-index: 20; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
-  }
-  .timesup-overlay.show { display: flex; animation: fadein 0.25s ease; }
-  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-  .timesup-title { font-family: var(--mono); font-size: clamp(2rem, 8vw, 4.5rem); color: var(--accent2); font-weight: 700; letter-spacing: -2px; }
-  .timesup-stats { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); }
-
-  /* FLASH */
-  .flash { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.08s; z-index: 10; }
-  .flash.correct-flash { background: rgba(46,213,115,0.15); }
-  .flash.wrong-flash { background: rgba(255,71,87,0.15); }
-  .flash.visible { opacity: 1; }
-
-  /* SCORE */
-  #screen-score { padding: 40px 20px; gap: 10px; justify-content: center; }
-  .score-title { font-family: var(--mono); font-size: clamp(0.9rem, 3vw, 1.4rem); color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
-  .score-number { font-family: var(--mono); font-size: clamp(3.5rem, 12vw, 7rem); font-weight: 700; color: var(--accent); line-height: 1; letter-spacing: -4px; }
-  .score-sub { font-size: 0.8rem; color: var(--muted); }
-  .score-time-display { font-family: var(--mono); font-size: 0.95rem; color: var(--accent4); }
-  .score-actions { display: flex; gap: 10px; margin-top: 16px; width: 100%; max-width: 400px; }
-  .score-btn {
-    flex: 1; padding: 14px; border: 1px solid var(--border); background: var(--surface);
-    color: var(--text); font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
-    cursor: pointer; transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase;
-  }
-  .score-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .score-btn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
-  .score-btn.primary:hover { background: #fff; border-color: #fff; }
-
-  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
-  .anim-pop { animation: pop 0.2s ease; }
-  .anim-shake { animation: shake 0.35s ease; }
-</style>
+<script>
+(function () {
+  var path = location.pathname;
+  var base = path.endsWith('/')
+    ? path
+    : (/\.[a-z0-9]+$/i.test(path.split('/').pop())
+      ? path.slice(0, path.lastIndexOf('/') + 1)
+      : path + '/');
+  var el = document.createElement('base');
+  el.href = base;
+  document.head.appendChild(el);
+  window.APP_BASE_PATH = base;
+})();
+</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
@@ -299,114 +37,185 @@
   <div class="timesup-stats" id="timesup-stats"></div>
 </div>
 
-<!-- ════════ MENU ════════ -->
+<!-- ════════ DASHBOARD ════════ -->
 <div class="screen active" id="screen-menu">
-  <h1 class="logo">math<span>-</span>blitz</h1>
-  <div class="tagline">скорость мышления</div>
-
-  <div class="section-label">операция</div>
-  <div class="menu-grid">
-    <button class="op-btn selected" data-op="×" onclick="toggleOp(this)"><span class="op-symbol">×</span>умножение</button>
-    <button class="op-btn" data-op="÷" onclick="toggleOp(this)"><span class="op-symbol">÷</span>деление</button>
-    <button class="op-btn" data-op="+" onclick="toggleOp(this)"><span class="op-symbol">+</span>сложение</button>
-    <button class="op-btn" data-op="−" onclick="toggleOp(this)"><span class="op-symbol">−</span>вычитание</button>
-  </div>
-
-  <div class="section-label">числа и подсказка</div>
-  <div class="settings-row">
-    <label class="select-field">
-      <span>диапазон</span>
-      <select id="range-select" onchange="selectRange(this)">
-        <option value="10" selected>1–10</option>
-        <option value="12">1–12</option>
-        <option value="20">1–20</option>
-        <option value="25">1–25</option>
-        <option value="50">1–50</option>
-        <option value="100">1–100</option>
-      </select>
-    </label>
-    <label class="select-field">
-      <span>тренировать</span>
-      <select id="focus-select" onchange="selectFocus(this)"></select>
-    </label>
-  </div>
-  <div class="toggle-stack">
-    <div class="toggle-row">
-      <label for="guide-toggle">
-        <input id="guide-toggle" type="checkbox" checked onchange="toggleGuide(this)">
-        показывать готовые ответы
-      </label>
-      <div class="toggle-hint">справа в игре</div>
+  <header class="app-header">
+    <div class="brand">
+      <h1 class="logo">math<span>-</span>blitz</h1>
+      <p class="tagline">скорость мышления</p>
     </div>
-  </div>
+    <button class="header-cta" id="quick-start-btn" type="button">Быстрый старт</button>
+  </header>
 
-  <div class="settings-row">
-    <label class="select-field">
-      <span>порядок вопросов</span>
-      <select id="sequence-mode-select" onchange="selectSequenceMode(this)">
-        <option value="random" selected>всегда случайно</option>
-        <option value="ordered-first">сначала по порядку, потом случайно</option>
-        <option value="ordered">всегда по порядку</option>
-      </select>
-    </label>
-  </div>
+  <main class="dashboard">
+    <div class="dashboard-grid">
 
-  <div class="section-label">режим игры</div>
-  <div class="game-mode-grid">
-    <button class="gm-btn selected" data-gm="classic" onclick="selectGameMode(this)">
-      <span class="gm-icon">📋</span>классика<span class="gm-sub">N вопросов</span>
-    </button>
-    <button class="gm-btn" data-gm="timed" onclick="selectGameMode(this)">
-      <span class="gm-icon">⏱</span>на время<span class="gm-sub">успей за T сек</span>
-    </button>
-    <button class="gm-btn" data-gm="survival" onclick="selectGameMode(this)">
-      <span class="gm-icon">∞</span>выживание<span class="gm-sub">максимум за T</span>
-    </button>
-  </div>
+      <section class="dash-card dash-today" aria-labelledby="label-today">
+        <div class="card-label" id="label-today">сегодня</div>
+        <div class="today-block" id="today-block">
+          <div class="today-date-head">
+            <div class="today-weekday" id="today-weekday"></div>
+            <div class="today-full-date" id="today-full-date"></div>
+          </div>
+          <div class="settings-preview" id="settings-preview"></div>
+          <div class="today-meta-row">
+            <div class="daily-streak-badge" id="daily-streak-badge"></div>
+          </div>
+        </div>
+      </section>
 
-  <div class="mode-options" id="opts-classic">
-    <div class="section-label">количество вопросов</div>
-    <div class="sub-grid">
-      <button class="sub-btn" data-val="10" onclick="selectSub('classic',this)">10</button>
-      <button class="sub-btn selected" data-val="20" onclick="selectSub('classic',this)">20</button>
-      <button class="sub-btn" data-val="30" onclick="selectSub('classic',this)">30</button>
-      <button class="sub-btn" data-val="50" onclick="selectSub('classic',this)">50</button>
-      <button class="sub-btn" data-val="100" onclick="selectSub('classic',this)">100</button>
+      <section class="dash-card dash-kpis" aria-labelledby="label-progress">
+        <div class="card-label" id="label-progress">прогресс</div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-value" id="kpi-streak">0</div>
+            <div class="kpi-label">серия дней</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-value" id="kpi-sessions">0</div>
+            <div class="kpi-label">всего сессий</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-value" id="kpi-accuracy">0%</div>
+            <div class="kpi-label">точность</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-value" id="kpi-today">0</div>
+            <div class="kpi-label">сегодня</div>
+          </div>
+        </div>
+        <div class="weekly-activity" id="weekly-activity" aria-label="Активность за 7 дней"></div>
+      </section>
+
+      <section class="dash-card dash-breakdown" aria-labelledby="label-breakdown">
+        <div class="card-label" id="label-breakdown">по операциям</div>
+        <div class="trainer-breakdown" id="ops-breakdown"></div>
+      </section>
+
+      <section class="dash-card dash-recent" aria-labelledby="label-recent">
+        <div class="card-label" id="label-recent">последние сессии</div>
+        <div class="recent-sessions" id="recent-sessions"></div>
+      </section>
+
+      <section class="dash-card dash-training" aria-labelledby="label-training">
+        <div class="card-label" id="label-training">тренировка</div>
+        <div class="training-layout">
+          <div class="training-main">
+
+            <div class="section-label">операция</div>
+            <div class="menu-grid">
+              <button class="op-btn selected" data-op="×" type="button"><span class="op-symbol">×</span>умножение</button>
+              <button class="op-btn" data-op="÷" type="button"><span class="op-symbol">÷</span>деление</button>
+              <button class="op-btn" data-op="+" type="button"><span class="op-symbol">+</span>сложение</button>
+              <button class="op-btn" data-op="−" type="button"><span class="op-symbol">−</span>вычитание</button>
+            </div>
+
+            <div class="section-label">числа и подсказка</div>
+            <div class="settings-row">
+              <label class="select-field">
+                <span>диапазон</span>
+                <select id="range-select">
+                  <option value="10" selected>1–10</option>
+                  <option value="12">1–12</option>
+                  <option value="20">1–20</option>
+                  <option value="25">1–25</option>
+                  <option value="50">1–50</option>
+                  <option value="100">1–100</option>
+                </select>
+              </label>
+              <label class="select-field">
+                <span>тренировать</span>
+                <select id="focus-select"></select>
+              </label>
+            </div>
+
+            <div class="toggle-stack">
+              <div class="toggle-row">
+                <label for="guide-toggle">
+                  <input id="guide-toggle" type="checkbox" checked>
+                  показывать готовые ответы
+                </label>
+                <div class="toggle-hint">справа в игре</div>
+              </div>
+            </div>
+
+            <div class="settings-row settings-row-single">
+              <label class="select-field">
+                <span>порядок вопросов</span>
+                <select id="sequence-mode-select">
+                  <option value="random" selected>всегда случайно</option>
+                  <option value="ordered-first">сначала по порядку, потом случайно</option>
+                  <option value="ordered">всегда по порядку</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="section-label">режим игры</div>
+            <div class="game-mode-grid game-mode-grid-wide">
+              <button class="gm-btn selected" data-gm="classic" type="button">
+                <span class="gm-icon">📋</span>классика<span class="gm-sub">N вопросов</span>
+              </button>
+              <button class="gm-btn" data-gm="timed" type="button">
+                <span class="gm-icon">⏱</span>на время<span class="gm-sub">успей за T сек</span>
+              </button>
+              <button class="gm-btn" data-gm="survival" type="button">
+                <span class="gm-icon">∞</span>выживание<span class="gm-sub">максимум за T</span>
+              </button>
+            </div>
+
+            <div class="mode-options" id="opts-classic">
+              <div class="section-label">количество вопросов</div>
+              <div class="sub-grid" data-sub-mode="classic">
+                <button class="sub-btn" data-val="10" type="button">10</button>
+                <button class="sub-btn selected" data-val="20" type="button">20</button>
+                <button class="sub-btn" data-val="30" type="button">30</button>
+                <button class="sub-btn" data-val="50" type="button">50</button>
+                <button class="sub-btn" data-val="100" type="button">100</button>
+              </div>
+            </div>
+
+            <div class="mode-options" id="opts-timed" style="display:none">
+              <div class="section-label">время на сессию</div>
+              <div class="sub-grid" data-sub-mode="timed">
+                <button class="sub-btn" data-val="30" type="button">30 сек</button>
+                <button class="sub-btn selected" data-val="60" type="button">1 мин</button>
+                <button class="sub-btn" data-val="120" type="button">2 мин</button>
+                <button class="sub-btn" data-val="180" type="button">3 мин</button>
+                <button class="sub-btn" data-val="300" type="button">5 мин</button>
+              </div>
+            </div>
+
+            <div class="mode-options" id="opts-survival" style="display:none">
+              <div class="section-label">лимит времени</div>
+              <div class="sub-grid" data-sub-mode="survival">
+                <button class="sub-btn" data-val="60" type="button">1 мин</button>
+                <button class="sub-btn selected" data-val="120" type="button">2 мин</button>
+                <button class="sub-btn" data-val="180" type="button">3 мин</button>
+                <button class="sub-btn" data-val="300" type="button">5 мин</button>
+              </div>
+            </div>
+
+            <div class="section-label">ввод ответа</div>
+            <div class="input-mode-row">
+              <button class="mode-btn" data-mode="keyboard" type="button">⌨ клавиатура</button>
+              <button class="mode-btn selected" data-mode="choices" type="button">☰ варианты</button>
+              <button class="mode-btn" data-mode="screen" type="button">📱 экран</button>
+            </div>
+
+            <div class="seo-description">
+              math-blitz — это онлайн-тренажер устного счета для регулярной практики математики без установки приложений и лишних отвлечений. Здесь можно быстро повторять таблицу умножения, тренировать деление, сложение и вычитание, выбирать диапазон чисел от простого 1–10 до более сложных вариантов и настраивать порядок вопросов под конкретную цель. Инструмент подходит для школьников, родителей, репетиторов и взрослых, которые хотят освежить быстрый счет в уме. Можно тренироваться в случайном порядке, проходить примеры строго последовательно или сначала закрепить таблицу по порядку, а затем перейти к случайным заданиям. Для удобства рядом с задачей есть справочник с готовыми ответами: он показывает только актуальную таблицу для текущего примера и подсвечивает нужную строку, чтобы можно было быстро свериться и не терять фокус. Такой формат помогает учить таблицу умножения на 2, 3, 4, 5, 6, 7, 8, 9 и 10, отрабатывать деление на выбранное число, повторять примеры на сложение и вычитание, а также постепенно повышать скорость реакции. Режимы с ограничением по времени подходят для коротких тренировок, классический режим — для спокойного закрепления заданного количества вопросов, а режим выживания помогает удерживать концентрацию и следить за серией правильных ответов. Тренажер работает прямо в браузере, адаптируется под экран и подходит как для занятий дома, так и для быстрых математических разминок на уроке.
+            </div>
+          </div>
+
+          <div class="cta-panel">
+            <p class="cta-hint">Таблица умножения, деление, сложение — всё в одном дашборде с прогрессом.</p>
+            <button class="start-btn" id="start-btn" type="button">СТАРТ →</button>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </div>
-
-  <div class="mode-options" id="opts-timed" style="display:none">
-    <div class="section-label">время на сессию</div>
-    <div class="sub-grid">
-      <button class="sub-btn" data-val="30" onclick="selectSub('timed',this)">30 сек</button>
-      <button class="sub-btn selected" data-val="60" onclick="selectSub('timed',this)">1 мин</button>
-      <button class="sub-btn" data-val="120" onclick="selectSub('timed',this)">2 мин</button>
-      <button class="sub-btn" data-val="180" onclick="selectSub('timed',this)">3 мин</button>
-      <button class="sub-btn" data-val="300" onclick="selectSub('timed',this)">5 мин</button>
-    </div>
-  </div>
-
-  <div class="mode-options" id="opts-survival" style="display:none">
-    <div class="section-label">лимит времени</div>
-    <div class="sub-grid">
-      <button class="sub-btn" data-val="60" onclick="selectSub('survival',this)">1 мин</button>
-      <button class="sub-btn selected" data-val="120" onclick="selectSub('survival',this)">2 мин</button>
-      <button class="sub-btn" data-val="180" onclick="selectSub('survival',this)">3 мин</button>
-      <button class="sub-btn" data-val="300" onclick="selectSub('survival',this)">5 мин</button>
-    </div>
-  </div>
-
-  <div class="section-label">ввод ответа</div>
-  <div class="input-mode-row">
-    <button class="mode-btn" data-mode="keyboard" onclick="selectInputMode(this)">⌨ клавиатура</button>
-    <button class="mode-btn selected" data-mode="choices" onclick="selectInputMode(this)">☰ варианты</button>
-    <button class="mode-btn" data-mode="screen" onclick="selectInputMode(this)">📱 экран</button>
-  </div>
-
-  <button class="start-btn" onclick="startGame()">СТАРТ →</button>
-  <div class="seo-description">
-    math-blitz — это онлайн-тренажер устного счета для регулярной практики математики без установки приложений и лишних отвлечений. Здесь можно быстро повторять таблицу умножения, тренировать деление, сложение и вычитание, выбирать диапазон чисел от простого 1–10 до более сложных вариантов и настраивать порядок вопросов под конкретную цель. Инструмент подходит для школьников, родителей, репетиторов и взрослых, которые хотят освежить быстрый счет в уме. Можно тренироваться в случайном порядке, проходить примеры строго последовательно или сначала закрепить таблицу по порядку, а затем перейти к случайным заданиям. Для удобства рядом с задачей есть справочник с готовыми ответами: он показывает только актуальную таблицу для текущего примера и подсвечивает нужную строку, чтобы можно было быстро свериться и не терять фокус. Такой формат помогает учить таблицу умножения на 2, 3, 4, 5, 6, 7, 8, 9 и 10, отрабатывать деление на выбранное число, повторять примеры на сложение и вычитание, а также постепенно повышать скорость реакции. Режимы с ограничением по времени подходят для коротких тренировок, классический режим — для спокойного закрепления заданного количества вопросов, а режим выживания помогает удерживать концентрацию и следить за серией правильных ответов. Тренажер работает прямо в браузере, адаптируется под экран и подходит как для занятий дома, так и для быстрых математических разминок на уроке.
-  </div>
+  </main>
 </div>
 
 <!-- ════════ GAME ════════ -->
@@ -414,13 +223,14 @@
   <div class="game-shell">
     <main class="game-main">
       <div class="game-header">
-        <div class="streak">серия: <span id="streak-count">0</span></div>
-        <div style="display:flex;gap:12px;align-items:center;">
-          <div style="font-family:var(--mono);font-size:0.7rem;color:var(--muted);">
-            ✓<span id="score-correct" style="color:var(--accent3);margin-left:3px">0</span>
-            &nbsp;✗<span id="score-wrong" style="color:var(--accent2);margin-left:3px">0</span>
+        <div class="trainer-label" id="trainer-label">×</div>
+        <div class="game-header-right">
+          <div class="hud-stats">
+            серия <span id="streak-count">0</span>
+            · ✓<span id="score-correct">0</span>
+            · ✗<span id="score-wrong">0</span>
           </div>
-          <button class="quit-btn" onclick="quitGame()">✕ выход</button>
+          <button class="quit-btn" id="quit-btn" type="button">✕ выход</button>
         </div>
       </div>
 
@@ -447,32 +257,32 @@
       <div class="keyboard-hint" id="keyboard-hint" style="display:none">цифры · Enter → ответ · Backspace → стереть</div>
 
       <div class="choices-grid" id="choices-grid" style="display:none">
-        <button class="choice-btn" id="c0" data-choice-idx="0"></button>
-        <button class="choice-btn" id="c1" data-choice-idx="1"></button>
-        <button class="choice-btn" id="c2" data-choice-idx="2"></button>
-        <button class="choice-btn" id="c3" data-choice-idx="3"></button>
+        <button class="choice-btn" id="c0" data-choice-idx="0" type="button"></button>
+        <button class="choice-btn" id="c1" data-choice-idx="1" type="button"></button>
+        <button class="choice-btn" id="c2" data-choice-idx="2" type="button"></button>
+        <button class="choice-btn" id="c3" data-choice-idx="3" type="button"></button>
       </div>
 
       <div class="screen-keyboard" id="screen-keyboard" style="display:none">
         <div class="sk-row">
-          <button class="sk-btn" data-sk-key="7">7</button>
-          <button class="sk-btn" data-sk-key="8">8</button>
-          <button class="sk-btn" data-sk-key="9">9</button>
+          <button class="sk-btn" data-sk-key="7" type="button">7</button>
+          <button class="sk-btn" data-sk-key="8" type="button">8</button>
+          <button class="sk-btn" data-sk-key="9" type="button">9</button>
         </div>
         <div class="sk-row">
-          <button class="sk-btn" data-sk-key="4">4</button>
-          <button class="sk-btn" data-sk-key="5">5</button>
-          <button class="sk-btn" data-sk-key="6">6</button>
+          <button class="sk-btn" data-sk-key="4" type="button">4</button>
+          <button class="sk-btn" data-sk-key="5" type="button">5</button>
+          <button class="sk-btn" data-sk-key="6" type="button">6</button>
         </div>
         <div class="sk-row">
-          <button class="sk-btn" data-sk-key="1">1</button>
-          <button class="sk-btn" data-sk-key="2">2</button>
-          <button class="sk-btn" data-sk-key="3">3</button>
+          <button class="sk-btn" data-sk-key="1" type="button">1</button>
+          <button class="sk-btn" data-sk-key="2" type="button">2</button>
+          <button class="sk-btn" data-sk-key="3" type="button">3</button>
         </div>
         <div class="sk-row">
-          <button class="sk-btn" data-sk-key="back">⌫</button>
-          <button class="sk-btn" data-sk-key="0">0</button>
-          <button class="sk-btn sk-enter" data-sk-key="enter">OK</button>
+          <button class="sk-btn" data-sk-key="back" type="button">⌫</button>
+          <button class="sk-btn" data-sk-key="0" type="button">0</button>
+          <button class="sk-btn sk-enter" data-sk-key="enter" type="button">OK</button>
         </div>
       </div>
     </main>
@@ -483,827 +293,23 @@
 
 <!-- ════════ SCORE ════════ -->
 <div class="screen" id="screen-score">
-  <div class="score-title" id="score-mode-label">итого</div>
-  <div class="score-number" id="final-score">0</div>
-  <div class="score-sub" id="final-sub"></div>
-  <div class="score-time-display" id="final-time" style="display:none"></div>
-  <div class="score-sub" id="final-streak"></div>
-  <div class="score-actions">
-    <button class="score-btn" onclick="goMenu()">меню</button>
-    <button class="score-btn primary" onclick="restartGame()">ещё раз</button>
+  <div class="score-panel">
+    <div class="score-title" id="score-mode-label">итого</div>
+    <div class="score-number" id="final-score">0</div>
+    <div class="score-sub" id="final-sub"></div>
+    <div class="score-time-display" id="final-time" style="display:none"></div>
+    <div class="score-date-display" id="final-date"></div>
+    <div class="score-sub" id="final-streak"></div>
+    <div class="score-sub" id="final-daily-streak"></div>
+    <div class="score-actions">
+      <button class="score-btn" id="menu-btn" type="button">дашборд</button>
+      <button class="score-btn primary" id="restart-btn" type="button">ещё раз</button>
+    </div>
   </div>
 </div>
 
-<script>
-// ── SETTINGS ──
-let selectedOps       = ['×'];
-let selectedRange     = 10;
-let selectedFocus     = 'any';
-let showAnswerGuide   = true;
-let guideExpanded     = true;
-let sequenceMode      = 'random';
-let selectedInputMode = 'choices';
-let selectedGameMode  = 'classic';
-let classicCount      = 20;
-let timedSeconds      = 60;
-let survivalSeconds   = 120;
-
-// ── GAME STATE ──
-let typedValue     = '';
-let currentAnswer  = 0;
-let currentGuideKey = '';
-let currentQuestion = null;
-let currentChoices = [];
-let lastQuestion = null;
-let orderedQueue = [];
-let orderedQueueActive = false;
-let orderedFirstDone = false;
-let correctCount   = 0;
-let wrongCount     = 0;
-let streak         = 0;
-let bestStreak     = 0;
-let totalQuestions = 20;
-let questionNum    = 0;
-let locked         = false;
-let lastSettings   = {};
-let gameStartTime  = 0;
-
-// timer
-let timerInterval   = null;
-let timerRemaining  = 0;
-let timerTotal      = 0;
-let warnedHalf      = false;
-let warnedCritical  = false;
-let gameOver        = false;
-
-// ── AUDIO ──
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let actx = null;
-function getAC() { if (!actx) actx = new AudioCtx(); return actx; }
-
-function playCorrect() {
-  try {
-    const ctx = getAC(), t = ctx.currentTime;
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
-    o.frequency.setValueAtTime(660, t);
-    o.frequency.setValueAtTime(880, t + 0.08);
-    g.gain.setValueAtTime(0.28, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
-    o.start(t); o.stop(t + 0.24);
-  } catch(e) {}
-}
-
-function playWrong() {
-  try {
-    const ctx = getAC(), t = ctx.currentTime;
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(220, t);
-    o.frequency.setValueAtTime(160, t + 0.12);
-    g.gain.setValueAtTime(0.2, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.34);
-    o.start(t); o.stop(t + 0.34);
-  } catch(e) {}
-}
-
-// 50% времени — одиночный предупреждающий сигнал
-function playWarn() {
-  try {
-    const ctx = getAC(), t = ctx.currentTime;
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine';
-    o.frequency.setValueAtTime(750, t);
-    g.gain.setValueAtTime(0.22, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-    o.start(t); o.stop(t + 0.45);
-  } catch(e) {}
-}
-
-// 20% времени — тройной тревожный сигнал
-function playCritical() {
-  try {
-    const ctx = getAC();
-    [0, 0.17, 0.34].forEach(delay => {
-      const t = ctx.currentTime + delay;
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.type = 'square';
-      o.frequency.setValueAtTime(900, t);
-      g.gain.setValueAtTime(0.15, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
-      o.start(t); o.stop(t + 0.13);
-    });
-  } catch(e) {}
-}
-
-// Время вышло — нисходящие ноты
-function playTimeUp() {
-  try {
-    const ctx = getAC();
-    [440, 349, 261].forEach((freq, i) => {
-      const t = ctx.currentTime + i * 0.22;
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(freq, t);
-      g.gain.setValueAtTime(0.28, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-      o.start(t); o.stop(t + 0.5);
-    });
-  } catch(e) {}
-}
-
-// ── MENU ──
-function toggleOp(btn) {
-  const op = btn.dataset.op;
-  if (selectedOps.includes(op)) {
-    if (selectedOps.length === 1) return;
-    selectedOps = selectedOps.filter(o => o !== op);
-    btn.classList.remove('selected');
-  } else {
-    selectedOps.push(op);
-    btn.classList.add('selected');
-  }
-  resetQuestionSequence();
-  renderPracticeGuide();
-}
-
-function selectRange(control) {
-  selectedRange = parseInt(control.value || control.dataset.range);
-  updateFocusOptions();
-  resetQuestionSequence();
-  renderPracticeGuide();
-}
-
-function selectFocus(control) {
-  selectedFocus = control.value;
-  resetQuestionSequence();
-  renderPracticeGuide();
-}
-
-function toggleGuide(control) {
-  showAnswerGuide = control.checked;
-  guideExpanded = showAnswerGuide;
-  renderPracticeGuide();
-}
-
-function setGuideExpanded(expanded) {
-  guideExpanded = expanded;
-  renderPracticeGuide();
-  highlightGuideAnswer();
-}
-
-function selectSequenceMode(control) {
-  sequenceMode = control.value;
-  resetQuestionSequence();
-}
-
-function resetQuestionSequence() {
-  orderedQueue = [];
-  orderedQueueActive = false;
-  orderedFirstDone = false;
-  lastQuestion = null;
-}
-
-function updateFocusOptions() {
-  const select = document.getElementById('focus-select');
-  if (!select) return;
-
-  const previous = selectedFocus;
-  select.innerHTML = '<option value="any">любые числа</option>';
-  for (let i = 1; i <= selectedRange; i++) {
-    const option = document.createElement('option');
-    option.value = String(i);
-    option.textContent = `только на ${i}`;
-    select.appendChild(option);
-  }
-
-  selectedFocus = previous !== 'any' && Number(previous) <= selectedRange ? previous : 'any';
-  select.value = selectedFocus;
-}
-
-function syncSettingsFromControls() {
-  const rangeSelect = document.getElementById('range-select');
-  const focusSelect = document.getElementById('focus-select');
-  const guideToggle = document.getElementById('guide-toggle');
-  const sequenceSelect = document.getElementById('sequence-mode-select');
-  const selectedGameButton = document.querySelector('.gm-btn.selected');
-  const selectedInputButton = document.querySelector('.mode-btn.selected');
-  const visibleFocus = focusSelect?.value;
-
-  selectedRange = parseInt(rangeSelect?.value || selectedRange);
-  updateFocusOptions();
-  if (visibleFocus && (visibleFocus === 'any' || Number(visibleFocus) <= selectedRange)) {
-    selectedFocus = visibleFocus;
-    const updatedFocusSelect = document.getElementById('focus-select');
-    if (updatedFocusSelect) updatedFocusSelect.value = selectedFocus;
-  }
-  showAnswerGuide = guideToggle ? guideToggle.checked : showAnswerGuide;
-  sequenceMode = sequenceSelect?.value || sequenceMode;
-  selectedGameMode = selectedGameButton?.dataset.gm || selectedGameMode;
-  selectedInputMode = selectedInputButton?.dataset.mode || selectedInputMode;
-
-  const activeOptions = document.getElementById('opts-' + selectedGameMode);
-  const selectedSub = activeOptions?.querySelector('.sub-btn.selected');
-  if (selectedSub) selectSubValue(selectedGameMode, parseInt(selectedSub.dataset.val));
-}
-
-function syncControlsFromState() {
-  const rangeSelect = document.getElementById('range-select');
-  const guideToggle = document.getElementById('guide-toggle');
-  const sequenceSelect = document.getElementById('sequence-mode-select');
-
-  if (rangeSelect) rangeSelect.value = String(selectedRange);
-  updateFocusOptions();
-  if (guideToggle) guideToggle.checked = showAnswerGuide;
-  if (sequenceSelect) sequenceSelect.value = sequenceMode;
-}
-
-function selectGameMode(btn) {
-  document.querySelectorAll('.gm-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedGameMode = btn.dataset.gm;
-  resetQuestionSequence();
-  document.getElementById('opts-classic').style.display  = selectedGameMode === 'classic'  ? 'block' : 'none';
-  document.getElementById('opts-timed').style.display    = selectedGameMode === 'timed'    ? 'block' : 'none';
-  document.getElementById('opts-survival').style.display = selectedGameMode === 'survival' ? 'block' : 'none';
-}
-
-function selectSub(mode, btn) {
-  btn.closest('.sub-grid').querySelectorAll('.sub-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  const v = parseInt(btn.dataset.val);
-  selectSubValue(mode, v);
-  resetQuestionSequence();
-}
-
-function selectSubValue(mode, value) {
-  if (mode === 'classic')  classicCount = value;
-  if (mode === 'timed')    timedSeconds = value;
-  if (mode === 'survival') survivalSeconds = value;
-}
-
-function selectInputMode(btn) {
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedInputMode = btn.dataset.mode;
-}
-
-// ── QUESTION GEN ──
-function generateQuestion() {
-  const op = selectedOps[Math.floor(Math.random() * selectedOps.length)];
-  const { a, b, answer } = getOperandPair(op);
-  return { text: `${a} ${op} ${b}`, op, a, b, answer };
-}
-
-function getNextQuestion() {
-  if (sequenceMode === 'ordered') {
-    if (orderedQueue.length === 0) orderedQueue = buildOrderedQueue();
-    const q = orderedQueue.shift();
-    lastQuestion = q;
-    return q;
-  }
-
-  if (sequenceMode === 'ordered-first' && !orderedFirstDone) {
-    if (!orderedQueueActive) {
-      orderedQueue = buildOrderedQueue();
-      orderedQueueActive = orderedQueue.length > 0;
-    }
-    const q = orderedQueue.shift();
-    if (orderedQueue.length === 0) {
-      orderedQueueActive = false;
-      orderedFirstDone = true;
-    }
-    lastQuestion = q;
-    return q;
-  }
-
-  let q = generateQuestion();
-  let attempts = 0;
-  while (lastQuestion && isSameQuestion(q, lastQuestion) && attempts < 30) {
-    q = generateQuestion();
-    attempts++;
-  }
-  lastQuestion = q;
-  return q;
-}
-
-function buildOrderedQueue() {
-  const queue = [];
-  selectedOps.forEach(op => {
-    const fixed = selectedFocus === 'any' ? 1 : parseInt(selectedFocus);
-    for (let n = 1; n <= selectedRange; n++) {
-      const pair = getOrderedOperandPair(op, fixed, n);
-      queue.push({ text: `${pair.a} ${op} ${pair.b}`, op, a: pair.a, b: pair.b, answer: pair.answer });
-    }
-  });
-  return queue;
-}
-
-function getOrderedOperandPair(op, fixed, n) {
-  if (op === '×') return { a: fixed, b: n, answer: fixed * n };
-  if (op === '÷') return { a: fixed * n, b: fixed, answer: n };
-  if (op === '+') return { a: n, b: fixed, answer: n + fixed };
-  return { a: n + fixed, b: fixed, answer: n };
-}
-
-function isSameQuestion(a, b) {
-  return !!a && !!b && a.op === b.op && a.a === b.a && a.b === b.b;
-}
-
-function getOperandPair(op) {
-  const fixed = selectedFocus === 'any' ? null : parseInt(selectedFocus);
-  let a, b, answer;
-
-  if (op === '×') {
-    a = fixed || randInt(1, selectedRange);
-    b = randInt(1, selectedRange);
-    answer = a * b;
-  } else if (op === '÷') {
-    b = fixed || randInt(1, selectedRange);
-    answer = randInt(1, selectedRange);
-    a = b * answer;
-  } else if (op === '+') {
-    a = randInt(1, selectedRange);
-    b = fixed || randInt(1, selectedRange);
-    answer = a + b;
-  } else {
-    b = fixed || randInt(1, selectedRange);
-    answer = randInt(0, selectedRange);
-    a = answer + b;
-  }
-
-  return { a, b, answer };
-}
-
-function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-function generateChoices(correct) {
-  const choices = new Set([correct]);
-  let attempts = 0;
-  while (choices.size < 4 && attempts < 120) {
-    attempts++;
-    const spread = Math.max(3, Math.floor(correct * 0.28));
-    const delta = randInt(-spread, spread);
-    const c = correct + delta;
-    if (c > 0 && c !== correct) choices.add(c);
-  }
-  let fb = 1;
-  while (choices.size < 4) { if (!choices.has(fb)) choices.add(fb); fb++; }
-  return shuffle([...choices]);
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function renderPracticeGuide() {
-  const guide = document.getElementById('practice-guide');
-  if (!guide) return;
-
-  const rows = buildGuideRows();
-  const title = rows.title;
-  const meta = rows.limited ? `первые ${rows.items.length}` : `${rows.items.length} ответов`;
-  const buttonLabel = guideExpanded ? 'скрыть' : 'раскрыть';
-  const buttonTitle = guideExpanded ? 'Скрыть готовые ответы' : 'Показать готовые ответы';
-
-  guide.innerHTML = `
-    <div class="guide-head">
-      <div class="guide-copy">
-        <div class="guide-title">${title}</div>
-        <div class="guide-meta">${meta}</div>
-      </div>
-      <button class="guide-reveal-btn" id="guide-reveal-btn" type="button" title="${buttonTitle}" onclick="setGuideExpanded(!guideExpanded)">${buttonLabel}</button>
-    </div>
-    <div class="guide-list">
-      ${rows.items.map(row => {
-        const key = getGuideKey(row.left, row.answer);
-        const current = key === currentGuideKey ? ' current' : '';
-        return `<div class="guide-row${current}" data-guide-key="${key}">${row.left} = <span>${row.answer}</span></div>`;
-      }).join('')}
-    </div>
-  `;
-  guide.className = 'practice-guide show' + (guideExpanded ? '' : ' collapsed');
-}
-
-function highlightGuideAnswer() {
-  const guide = document.getElementById('practice-guide');
-  if (!guide || !currentGuideKey) return;
-
-  guide.querySelectorAll('.guide-row.current').forEach(row => row.classList.remove('current'));
-  const current = guide.querySelector(`[data-guide-key="${currentGuideKey}"]`);
-  if (current) current.classList.add('current');
-}
-
-function getGuideKey(left, answer) {
-  return `${left}|${answer}`;
-}
-
-function buildGuideRows() {
-  if (selectedFocus === 'any') return buildContextGuideRows();
-
-  const items = [];
-  const limit = 420;
-
-  for (const op of selectedOps) {
-    const fixed = parseInt(selectedFocus);
-    for (let n = 1; n <= selectedRange; n++) {
-      items.push(formatFixedGuideRow(op, fixed, n));
-      if (items.length >= limit) return { title: `только на ${selectedFocus}`, items, limited: true };
-    }
-  }
-
-  return { title: `только на ${selectedFocus}`, items, limited: false };
-}
-
-function buildContextGuideRows() {
-  if (!currentQuestion) return { title: `таблица 1–${selectedRange}`, items: [], limited: false };
-
-  const anchor = getGuideAnchor(currentQuestion);
-  const items = [];
-  for (let n = 1; n <= selectedRange; n++) {
-    items.push(formatFixedGuideRow(currentQuestion.op, anchor, n));
-  }
-
-  return { title: `таблица на ${anchor}`, items, limited: false };
-}
-
-function getGuideAnchor(question) {
-  if (question.op === '×') return question.a;
-  return question.b;
-}
-
-function formatFixedGuideRow(op, fixed, n) {
-  if (op === '×') return { left: `${fixed} × ${n}`, answer: fixed * n };
-  if (op === '÷') return { left: `${fixed * n} ÷ ${fixed}`, answer: n };
-  if (op === '+') return { left: `${n} + ${fixed}`, answer: n + fixed };
-  return { left: `${n + fixed} − ${fixed}`, answer: n };
-}
-
-// ── START ──
-function startGame() {
-  syncSettingsFromControls();
-  lastSettings = {
-    ops: [...selectedOps], range: selectedRange, focus: selectedFocus, showGuide: showAnswerGuide,
-    sequenceMode,
-    inputMode: selectedInputMode, gameMode: selectedGameMode,
-    classicCount, timedSeconds, survivalSeconds
-  };
-  correctCount = 0; wrongCount = 0; streak = 0; bestStreak = 0;
-  questionNum = 0; locked = false; gameOver = false;
-  currentGuideKey = '';
-  currentQuestion = null;
-  resetQuestionSequence();
-  guideExpanded = showAnswerGuide;
-  warnedHalf = false; warnedCritical = false;
-  gameStartTime = Date.now();
-  totalQuestions = selectedGameMode === 'classic' ? classicCount : Infinity;
-
-  showScreen('game');
-  setupInputMode();
-  renderPracticeGuide();
-  setupTimer();
-  nextQuestion();
-}
-
-function restartGame() {
-  selectedOps       = lastSettings.ops;
-  selectedRange     = lastSettings.range;
-  selectedFocus     = lastSettings.focus || 'any';
-  showAnswerGuide   = lastSettings.showGuide !== false;
-  sequenceMode      = lastSettings.sequenceMode || 'random';
-  selectedInputMode = lastSettings.inputMode;
-  selectedGameMode  = lastSettings.gameMode;
-  classicCount      = lastSettings.classicCount  || classicCount;
-  timedSeconds      = lastSettings.timedSeconds   || timedSeconds;
-  survivalSeconds   = lastSettings.survivalSeconds || survivalSeconds;
-  startGame();
-}
-
-// ── TIMER ──
-function setupTimer() {
-  clearInterval(timerInterval);
-  const hasClock = selectedGameMode === 'timed' || selectedGameMode === 'survival';
-  document.getElementById('timer-row').style.display    = hasClock ? 'flex' : 'none';
-  document.getElementById('progress-bar').style.display = hasClock ? 'none' : 'block';
-
-  if (!hasClock) return;
-
-  timerTotal = selectedGameMode === 'timed' ? timedSeconds : survivalSeconds;
-  timerRemaining = timerTotal;
-  renderTimer();
-  timerInterval = setInterval(tickTimer, 250);
-}
-
-function tickTimer() {
-  if (gameOver) { clearInterval(timerInterval); return; }
-  timerRemaining = Math.max(0, timerRemaining - 0.25);
-
-  const pct = timerRemaining / timerTotal;
-  if (!warnedHalf && pct <= 0.5) { warnedHalf = true; playWarn(); }
-  if (!warnedCritical && pct <= 0.2) { warnedCritical = true; playCritical(); }
-
-  renderTimer();
-
-  if (timerRemaining <= 0) {
-    clearInterval(timerInterval);
-    triggerTimeUp();
-  }
-}
-
-function renderTimer() {
-  const secs = Math.ceil(timerRemaining);
-  const pct  = timerTotal > 0 ? timerRemaining / timerTotal : 0;
-  const mins = Math.floor(secs / 60);
-  const s    = secs % 60;
-
-  const disp = document.getElementById('timer-display');
-  const bar  = document.getElementById('timer-bar-fill');
-  const qc   = document.getElementById('qcount-display');
-
-  disp.textContent = timerTotal >= 60 ? `${mins}:${String(s).padStart(2,'0')}` : `${secs}`;
-  bar.style.width  = (pct * 100) + '%';
-
-  const cls = pct <= 0.2 ? 'critical' : pct <= 0.5 ? 'warn' : '';
-  disp.className = 'timer-display' + (cls ? ' ' + cls : '');
-  bar.className  = 'timer-bar-fill' + (cls ? ' ' + cls : '');
-
-  qc.textContent = selectedGameMode === 'survival'
-    ? correctCount + ' ✓'
-    : `${correctCount} ✓`;
-}
-
-function triggerTimeUp() {
-  if (gameOver) return;
-  gameOver = true;
-  locked = true;
-  playTimeUp();
-
-  const overlay = document.getElementById('timesup-overlay');
-  document.getElementById('timesup-stats').textContent =
-    `✓ ${correctCount}  ✗ ${wrongCount}  серия: ${bestStreak}`;
-  overlay.classList.add('show');
-
-  setTimeout(() => {
-    overlay.classList.remove('show');
-    showScore();
-  }, 1900);
-}
-
-// ── INPUT MODE ──
-function setupInputMode() {
-  document.getElementById('choices-grid').style.display    = 'none';
-  document.getElementById('screen-keyboard').style.display = 'none';
-  document.getElementById('typed-display').style.display   = 'none';
-  document.getElementById('keyboard-hint').style.display   = 'none';
-
-  if (selectedInputMode === 'choices') {
-    document.getElementById('choices-grid').style.display = 'grid';
-  } else if (selectedInputMode === 'screen') {
-    document.getElementById('screen-keyboard').style.display = 'flex';
-    document.getElementById('typed-display').style.display   = 'block';
-  } else {
-    document.getElementById('typed-display').style.display = 'block';
-    document.getElementById('keyboard-hint').style.display  = 'block';
-  }
-}
-
-// ── NEXT QUESTION ──
-function nextQuestion() {
-  if (gameOver) return;
-  if (selectedGameMode === 'classic' && questionNum >= totalQuestions) {
-    clearInterval(timerInterval);
-    showScore();
-    return;
-  }
-
-  const q = getNextQuestion();
-  currentQuestion = q;
-  currentAnswer = q.answer;
-  currentGuideKey = getGuideKey(q.text, q.answer);
-  typedValue = '';
-  locked = false;
-
-  document.getElementById('question-text').textContent = q.text;
-  document.getElementById('question-answer').textContent = '';
-  document.getElementById('question-answer').className = 'question-answer';
-  document.getElementById('typed-value').textContent = '';
-  document.getElementById('typed-value').style.color = '';
-
-  const qBox = document.getElementById('question-box');
-  qBox.className = 'question-box';
-  void qBox.offsetWidth;
-  qBox.classList.add('anim-pop');
-
-  if (selectedGameMode === 'classic') {
-    document.getElementById('progress-fill').style.width = (questionNum / totalQuestions * 100) + '%';
-  }
-
-  if (selectedInputMode === 'choices') {
-    currentChoices = generateChoices(currentAnswer);
-    for (let i = 0; i < 4; i++) {
-      const btn = document.getElementById('c' + i);
-      btn.textContent = currentChoices[i];
-      btn.className = 'choice-btn';
-      btn.disabled = false;
-    }
-  }
-
-  questionNum++;
-  renderPracticeGuide();
-  highlightGuideAnswer();
-  updateHUD();
-}
-
-function updateHUD() {
-  document.getElementById('streak-count').textContent  = streak;
-  document.getElementById('score-correct').textContent = correctCount;
-  document.getElementById('score-wrong').textContent   = wrongCount;
-}
-
-// ── ANSWERS ──
-function submitAnswer(userAnswer) {
-  if (locked || gameOver) return;
-  parseInt(userAnswer) === currentAnswer ? handleCorrect() : handleWrong(userAnswer);
-}
-
-function handleCorrect() {
-  locked = true;
-  correctCount++; streak++;
-  if (streak > bestStreak) bestStreak = streak;
-  updateHUD();
-  playCorrect();
-  showFlash('correct-flash');
-
-  document.getElementById('question-box').classList.add('correct');
-  if (selectedInputMode !== 'choices') document.getElementById('typed-value').textContent = currentAnswer;
-  const ans = document.getElementById('question-answer');
-  ans.textContent = '✓'; ans.className = 'question-answer show-correct';
-
-  setTimeout(() => nextQuestion(), 180);
-}
-
-function handleWrong(userAnswer) {
-  locked = true;
-  wrongCount++; streak = 0;
-  updateHUD();
-  playWrong();
-  showFlash('wrong-flash');
-
-  const qBox = document.getElementById('question-box');
-  qBox.classList.add('wrong'); void qBox.offsetWidth; qBox.classList.add('anim-shake');
-
-  if (selectedInputMode !== 'choices') {
-    const tv = document.getElementById('typed-value');
-    tv.textContent = userAnswer;
-    tv.style.color = 'var(--accent2)';
-  }
-  const ans = document.getElementById('question-answer');
-  ans.textContent = `→ ${currentAnswer}`; ans.className = 'question-answer show-wrong';
-
-  setTimeout(() => {
-    typedValue = '';
-    document.getElementById('typed-value').textContent = '';
-    document.getElementById('typed-value').style.color = '';
-    nextQuestion();
-  }, 1200);
-}
-
-function selectChoice(idx) {
-  if (locked || gameOver) return;
-  const chosen = currentChoices[idx];
-  for (let i = 0; i < 4; i++) document.getElementById('c' + i).disabled = true;
-  const btn = document.getElementById('c' + idx);
-  if (chosen === currentAnswer) {
-    btn.classList.add('correct-choice');
-    handleCorrect();
-  } else {
-    btn.classList.add('wrong-choice');
-    const ci = currentChoices.indexOf(currentAnswer);
-    if (ci !== -1) document.getElementById('c' + ci).classList.add('correct-choice');
-    handleWrong(chosen);
-  }
-}
-
-// ── TYPED INPUT ──
-function appendDigit(d) {
-  if (locked || gameOver) return;
-  if (typedValue.length >= 5) return;
-  typedValue += d;
-  document.getElementById('typed-value').textContent = typedValue;
-}
-function backspace() {
-  if (locked || gameOver) return;
-  typedValue = typedValue.slice(0, -1);
-  document.getElementById('typed-value').textContent = typedValue;
-}
-function confirmInput() {
-  if (locked || gameOver || typedValue === '') return;
-  submitAnswer(typedValue);
-}
-function skPress(key) {
-  if (key === 'back') backspace();
-  else if (key === 'enter') confirmInput();
-  else appendDigit(key);
-}
-
-function handleFastGameButtonPress(event) {
-  if (event.type === 'mousedown' && window.PointerEvent) return;
-  if (event.button !== 0) return;
-
-  const choiceButton = event.target.closest('.choice-btn');
-  if (choiceButton) {
-    event.preventDefault();
-    selectChoice(parseInt(choiceButton.dataset.choiceIdx));
-    return;
-  }
-
-  const screenKey = event.target.closest('.sk-btn');
-  if (screenKey) {
-    event.preventDefault();
-    skPress(screenKey.dataset.skKey);
-  }
-}
-
-document.getElementById('choices-grid').addEventListener('pointerdown', handleFastGameButtonPress);
-document.getElementById('screen-keyboard').addEventListener('pointerdown', handleFastGameButtonPress);
-document.getElementById('choices-grid').addEventListener('mousedown', handleFastGameButtonPress);
-document.getElementById('screen-keyboard').addEventListener('mousedown', handleFastGameButtonPress);
-
-document.addEventListener('keydown', e => {
-  if (!document.getElementById('screen-game').classList.contains('active')) return;
-  if (selectedInputMode === 'keyboard' || selectedInputMode === 'screen') {
-    if (e.key >= '0' && e.key <= '9') { e.preventDefault(); appendDigit(e.key); }
-    else if (e.key === 'Backspace') backspace();
-    else if (e.key === 'Enter') confirmInput();
-  }
-});
-
-// ── FLASH ──
-function showFlash(cls) {
-  const f = document.getElementById('flash');
-  f.className = 'flash ' + cls + ' visible';
-  setTimeout(() => f.classList.remove('visible'), 140);
-}
-
-// ── QUIT / SCORE ──
-function quitGame() {
-  clearInterval(timerInterval);
-  gameOver = true;
-  showScore();
-}
-
-function showScore() {
-  clearInterval(timerInterval);
-  const elapsed = ((Date.now() - gameStartTime) / 1000).toFixed(1);
-  const answeredQ = questionNum; // already incremented before each q
-
-  let modeLabel, subLine, timeLine = null;
-
-  if (selectedGameMode === 'classic') {
-    const pct = answeredQ > 0 ? Math.round((correctCount / answeredQ) * 100) : 0;
-    modeLabel = 'классика';
-    subLine   = `правильно: ${correctCount} из ${answeredQ} · ${pct}%`;
-    timeLine  = `время: ${elapsed} сек`;
-  } else if (selectedGameMode === 'timed') {
-    modeLabel = 'на время';
-    subLine   = `вопросов: ${answeredQ} · правильно: ${correctCount} · ошибок: ${wrongCount}`;
-  } else {
-    modeLabel = 'выживание';
-    subLine   = `правильно: ${correctCount} · ошибок: ${wrongCount} · вопросов: ${answeredQ}`;
-  }
-
-  document.getElementById('score-mode-label').textContent = modeLabel;
-  document.getElementById('final-score').textContent      = correctCount;
-  document.getElementById('final-sub').textContent        = subLine;
-  document.getElementById('final-streak').textContent     = `лучшая серия: ${bestStreak}`;
-
-  const timeEl = document.getElementById('final-time');
-  if (timeLine) { timeEl.textContent = timeLine; timeEl.style.display = 'block'; }
-  else timeEl.style.display = 'none';
-
-  showScreen('score');
-}
-
-function goMenu() {
-  syncControlsFromState();
-  showScreen('menu');
-}
-
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-}
-
-updateFocusOptions();
-</script>
+<script src="js/vendor/sql-wasm.js"></script>
+<script src="js/db.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

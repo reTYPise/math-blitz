@@ -1,0 +1,239 @@
+'use strict';
+
+const AppDB = (() => {
+  const DB_STORAGE_KEY = 'math-blitz-sqlite-v1';
+  const LEGACY_JSON_KEYS = ['math-blitz-stats-v1', 'math-blitz-v1'];
+
+  let sqlModule = null;
+  let db = null;
+  let ready = false;
+
+  function persist() {
+    if (!db) return;
+    const binary = db.export();
+    const buffer = new Uint8Array(binary);
+    let binaryStr = '';
+    for (let i = 0; i < buffer.length; i++) binaryStr += String.fromCharCode(buffer[i]);
+    localStorage.setItem(DB_STORAGE_KEY, btoa(binaryStr));
+  }
+
+  function loadFromStorage() {
+    const saved = localStorage.getItem(DB_STORAGE_KEY);
+    if (!saved) return null;
+    const binaryStr = atob(saved);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    return bytes;
+  }
+
+  function migrateLegacyJson() {
+    for (const key of LEGACY_JSON_KEYS) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed.sessions)) continue;
+        parsed.sessions.forEach(s => {
+          db.run(
+            `INSERT INTO sessions (date, timestamp, trainer, game_mode, correct, wrong, answered, best_streak, elapsed_sec, range_max, input_mode)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              s.date || '',
+              s.timestamp || Date.now(),
+              s.trainer || s.ops?.join?.('+') || '×',
+              s.gameMode || 'classic',
+              s.correct || 0,
+              s.wrong || 0,
+              s.answered || 0,
+              s.bestStreak || 0,
+              s.elapsedSec || 0,
+              s.rangeMax || 10,
+              s.inputMode || 'choices'
+            ]
+          );
+        });
+        persist();
+        localStorage.removeItem(key);
+      } catch (e) {}
+    }
+  }
+
+  function initSchema() {
+    db.run(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        timestamp INTEGER NOT NULL,
+        trainer TEXT NOT NULL,
+        game_mode TEXT NOT NULL,
+        correct INTEGER NOT NULL DEFAULT 0,
+        wrong INTEGER NOT NULL DEFAULT 0,
+        answered INTEGER NOT NULL DEFAULT 0,
+        best_streak INTEGER NOT NULL DEFAULT 0,
+        elapsed_sec REAL NOT NULL DEFAULT 0,
+        range_max INTEGER NOT NULL DEFAULT 10,
+        input_mode TEXT NOT NULL DEFAULT 'choices'
+      )
+    `);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_sessions_trainer ON sessions(trainer)`);
+  }
+
+  function assetPath(relativePath) {
+    const base = window.APP_BASE_PATH || '/';
+    return `${base}${relativePath}`.replace(/\/{2,}/g, '/');
+  }
+
+  async function init() {
+    if (ready) return;
+    sqlModule = await initSqlJs({ locateFile: file => assetPath(`js/vendor/${file}`) });
+    const saved = loadFromStorage();
+    db = saved ? new sqlModule.Database(saved) : new sqlModule.Database();
+    initSchema();
+    migrateLegacyJson();
+    ready = true;
+  }
+
+  function formatDateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function recordSession(session) {
+    db.run(
+      `INSERT INTO sessions (date, timestamp, trainer, game_mode, correct, wrong, answered, best_streak, elapsed_sec, range_max, input_mode)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        session.date,
+        session.timestamp || Date.now(),
+        session.trainer,
+        session.gameMode,
+        session.correct,
+        session.wrong,
+        session.answered,
+        session.bestStreak,
+        session.elapsedSec,
+        session.rangeMax || 10,
+        session.inputMode || 'choices'
+      ]
+    );
+    persist();
+  }
+
+  function queryAll(sql, params = []) {
+    const stmt = db.prepare(sql);
+    stmt.bind(params);
+    const rows = [];
+    while (stmt.step()) rows.push(stmt.getAsObject());
+    stmt.free();
+    return rows;
+  }
+
+  function queryOne(sql, params = []) {
+    const rows = queryAll(sql, params);
+    return rows[0] || null;
+  }
+
+  function getPracticeDates() {
+    return queryAll(`SELECT DISTINCT date FROM sessions WHERE date != '' ORDER BY date DESC`)
+      .map(r => r.date);
+  }
+
+  function calculateDailyStreak(referenceDate = new Date()) {
+    const dates = new Set(getPracticeDates());
+    if (dates.size === 0) return 0;
+    const cursor = new Date(referenceDate);
+    cursor.setHours(0, 0, 0, 0);
+    if (!dates.has(formatDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+    let count = 0;
+    while (dates.has(formatDateKey(cursor))) {
+      count++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return count;
+  }
+
+  function hasSessionToday(date = new Date()) {
+    const key = formatDateKey(date);
+    const row = queryOne(`SELECT COUNT(*) AS c FROM sessions WHERE date = ?`, [key]);
+    return (row?.c || 0) > 0;
+  }
+
+  function getOverallStats(date = new Date()) {
+    const totals = queryOne(`
+      SELECT
+        COUNT(*) AS total_sessions,
+        COALESCE(SUM(correct), 0) AS total_correct,
+        COALESCE(SUM(answered), 0) AS total_answered,
+        COALESCE(MAX(best_streak), 0) AS max_streak
+      FROM sessions
+    `);
+    const todayKey = formatDateKey(date);
+    const todayRow = queryOne(`SELECT COUNT(*) AS c FROM sessions WHERE date = ?`, [todayKey]);
+    const totalAnswered = totals?.total_answered || 0;
+    const totalCorrect = totals?.total_correct || 0;
+    return {
+      totalSessions: totals?.total_sessions || 0,
+      totalCorrect,
+      totalAnswered,
+      accuracy: totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0,
+      bestStreak: totals?.max_streak || 0,
+      dailyStreak: calculateDailyStreak(date),
+      todayCount: todayRow?.c || 0
+    };
+  }
+
+  function getTrainerBreakdown() {
+    return queryAll(`
+      SELECT
+        trainer,
+        COUNT(*) AS sessions,
+        COALESCE(SUM(correct), 0) AS correct,
+        COALESCE(SUM(answered), 0) AS answered
+      FROM sessions
+      GROUP BY trainer
+      ORDER BY sessions DESC
+    `).map(row => ({
+      trainer: row.trainer,
+      sessions: row.sessions,
+      accuracy: row.answered > 0 ? Math.round((row.correct / row.answered) * 100) : 0
+    }));
+  }
+
+  function getRecentSessions(limit = 6) {
+    return queryAll(`
+      SELECT date, trainer, game_mode, correct, wrong, answered, best_streak, elapsed_sec, timestamp, range_max
+      FROM sessions
+      ORDER BY timestamp DESC
+      LIMIT ?
+    `, [limit]);
+  }
+
+  function getWeeklyActivity(date = new Date()) {
+    const days = [];
+    const cursor = new Date(date);
+    cursor.setHours(0, 0, 0, 0);
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(cursor);
+      d.setDate(cursor.getDate() - i);
+      const key = formatDateKey(d);
+      const row = queryOne(`SELECT COUNT(*) AS c FROM sessions WHERE date = ?`, [key]);
+      days.push({ date: key, count: row?.c || 0, weekday: d.getDay() });
+    }
+    return days;
+  }
+
+  return {
+    init,
+    formatDateKey,
+    recordSession,
+    calculateDailyStreak,
+    hasSessionToday,
+    getOverallStats,
+    getTrainerBreakdown,
+    getRecentSessions,
+    getWeeklyActivity
+  };
+})();
