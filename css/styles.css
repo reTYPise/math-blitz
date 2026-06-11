@@ -230,17 +230,6 @@ html, body {
 .mode-btn:hover { color: var(--text); }
 .mode-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.06); }
 
-.seo-details { margin-top: 12px; }
-.seo-summary {
-  font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--muted); cursor: pointer; list-style: none;
-}
-.seo-summary::-webkit-details-marker { display: none; }
-.seo-description {
-  margin-top: 8px; color: var(--muted);
-  font-size: 0.78rem; line-height: 1.65;
-}
-
 .cta-panel {
   display: flex; flex-direction: column; justify-content: flex-start; gap: 14px;
   padding: 20px; background: var(--surface2); border: 1px solid var(--border);
